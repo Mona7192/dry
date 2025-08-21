@@ -19,7 +19,7 @@ const OrderTabs: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`);
         const data = await res.json();
         setCategories(data);
       } catch (error) {
@@ -40,9 +40,8 @@ const OrderTabs: React.FC = () => {
       <div className="flex space-x-4 border-b mb-4">
         {/* Special Orders */}
         <button
-          className={`pb-2 ${
-            activeTab === "special" ? "border-b-2 border-blue-500" : ""
-          }`}
+          className={`pb-2 ${activeTab === "special" ? "border-b-2 border-blue-500" : ""
+            }`}
           onClick={() => setActiveTab("special")}
         >
           Special Orders
@@ -52,9 +51,8 @@ const OrderTabs: React.FC = () => {
         {categories.map((cat) => (
           <button
             key={cat.id}
-            className={`pb-2 ${
-              activeTab === String(cat.id) ? "border-b-2 border-blue-500" : ""
-            }`}
+            className={`pb-2 ${activeTab === String(cat.id) ? "border-b-2 border-blue-500" : ""
+              }`}
             onClick={() => setActiveTab(String(cat.id))}
           >
             {cat.name}

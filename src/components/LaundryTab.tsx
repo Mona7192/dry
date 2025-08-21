@@ -38,9 +38,9 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
     const fetchData = async () => {
       try {
         const [catsRes, subsRes, servicesRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/categories`).then((r) => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sub-categories`).then((r) => r.json()),
-          fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/services`).then((r) => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`).then((r) => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/sub-categories`).then((r) => r.json()),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/services`).then((r) => r.json()),
         ]);
 
         const structured: Category[] = catsRes
@@ -109,7 +109,7 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
                     <div>
                       <p>{srv.name}</p>
                       <p className="text-sm text-gray-500">
-                        {srv.price} تومان
+                        ${srv.price}
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
