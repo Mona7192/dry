@@ -1,8 +1,8 @@
+// components/LaundryTab.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
-
-const baseURL = "http://localhost:8000"; // تغییر بده به بک‌اند خودت
+import { useOrderStore } from "@/store/orderStore";
 
 interface Service {
   id: number;
@@ -33,6 +33,8 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selected, setSelected] = useState<any>({});
+  const [openSubCategories, setOpenSubCategories] = useState<Set<number>>(new Set());
+  const { addOrderLine } = useOrderStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,8 +89,32 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
         },
       };
 
+      if (newQty > 0) {
+        addOrderLine({
+          id: service.id,
+          name: service.name,
+          price: parseFloat(service.price),
+          quantity: newQty,
+          categoryTitle: categories[0]?.name || "",
+        });
+      } else {
+        addOrderLine({ id: service.id, quantity: 0 }); // حذف اگر مقدار صفر شد
+      }
+
       onSelectionChange(updated);
       return updated;
+    });
+  };
+
+  const toggleSubCategory = (subCatId: number) => {
+    setOpenSubCategories((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(subCatId)) {
+        newSet.delete(subCatId);
+      } else {
+        newSet.add(subCatId);
+      }
+      return newSet;
     });
   };
 
@@ -97,54 +123,66 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
       {categories.map((cat) => (
         <div key={cat.id}>
           {cat.subCategories.map((sub) => (
-            <div key={sub.id} className="border p-4 mb-4 rounded-lg shadow">
-              <h3 className="font-semibold mb-2">{sub.name}</h3>
-              {sub.services.map((srv) => {
-                const quantity = selected[sub.id]?.[srv.id]?.quantity || 0;
-                return (
-                  <div
-                    key={srv.id}
-                    className="flex justify-between items-center mb-2"
-                  >
-                    <div>
-                      <p>{srv.name}</p>
-                      <p className="text-sm text-gray-500">
-                        ${srv.price}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {quantity === 0 ? (
-                        <button
-                          onClick={() => handleQuantityChange(sub.id, srv, 1)}
-                          className="px-3 py-1 bg-blue-500 text-white rounded"
-                        >
-                          Add Item
-                        </button>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() =>
-                              handleQuantityChange(sub.id, srv, -1)
-                            }
-                            className="px-2 py-1 bg-gray-300 rounded"
-                          >
-                            -
-                          </button>
-                          <span>{quantity}</span>
-                          <button
-                            onClick={() =>
-                              handleQuantityChange(sub.id, srv, 1)
-                            }
-                            className="px-2 py-1 bg-gray-300 rounded"
-                          >
-                            +
-                          </button>
+            <div key={sub.id} className="border border-Gray-2 p-4 mb-4 rounded-2xl">
+              <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={() => toggleSubCategory(sub.id)}
+              >
+                <h3 className="font-semibold mb-2">{sub.name}</h3>
+                <button className="text-Secondary font-bold">
+                  {openSubCategories.has(sub.id) ? "-" : "+"}
+                </button>
+              </div>
+              {openSubCategories.has(sub.id) && (
+                <div className="mt-2">
+                  {sub.services.map((srv) => {
+                    const quantity = selected[sub.id]?.[srv.id]?.quantity || 0;
+                    return (
+                      <div
+                        key={srv.id}
+                        className="flex justify-between items-center mb-2"
+                      >
+                        <div>
+                          <p>{srv.name}</p>
+                          <p className="text-sm text-gray-500">
+                            ${srv.price}
+                          </p>
                         </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                        <div className="flex items-center space-x-2">
+                          {quantity === 0 ? (
+                            <button
+                              onClick={() => handleQuantityChange(sub.id, srv, 1)}
+                              className="px-3 py-1 bg-Secondary text-white rounded-2xl"
+                            >
+                              Add Item
+                            </button>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(sub.id, srv, -1)
+                                }
+                                className="px-2 py-0.5 text-white bg-red-600 rounded-4xl"
+                              >
+                                -
+                              </button>
+                              <span className="font-medium bg-light border border-Secondary text-Secondary p-1 rounded-xl">{quantity} Item</span>
+                              <button
+                                onClick={() =>
+                                  handleQuantityChange(sub.id, srv, 1)
+                                }
+                                className="px-2 py-0.5 text-white bg-Secondary rounded-4xl"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           ))}
         </div>

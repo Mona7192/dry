@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { nanoid } from "nanoid";
 import { persist } from "zustand/middleware";
 
-type OrderItem = {
+export type OrderItem = {
   id: string;
   name: string;
   price: number;
@@ -12,20 +12,21 @@ type OrderItem = {
   options?: string[];
 };
 
-type CustomOrder = {
+export type CustomOrder = {
   id: string;
   subject: string;
   description: string;
 };
 
-type OrderState = {
+export type OrderState = {
   lines: { [id: string]: OrderItem };
   customOrders: CustomOrder[];
-  addItem: (item: Omit<OrderItem, "quantity">) => void;
-  removeItem: (id: string) => void;
+  addOrderLine: (item: Partial<OrderItem>) => void;
+  removeOrderLine: (id: string) => void;
   addCustomOrder: (subject: string, description: string) => void;
   removeCustomOrder: (id: string) => void;
   total: () => number;
+  resetOrders: () => void;
 };
 
 export const useOrderStore = create<OrderState>()(
@@ -34,36 +35,35 @@ export const useOrderStore = create<OrderState>()(
       lines: {},
       customOrders: [],
 
-      addItem: (item) => {
-        const current = get().lines[item.id];
-        const quantity = current ? current.quantity + 1 : 1;
-
-        set((state) => ({
-          lines: {
-            ...state.lines,
-            [item.id]: {
+      addOrderLine: (item) =>
+        set((state) => {
+          const lines = { ...state.lines };
+          if (item.quantity === 0 && item.id) {
+            delete lines[item.id];
+          } else if (item.id) {
+            lines[item.id] = {
+              ...lines[item.id],
               ...item,
-              quantity,
-            },
-          },
-        }));
-      },
+              quantity: item.quantity || (lines[item.id]?.quantity || 0) + 1,
+            };
+          }
+          return { lines };
+        }),
 
-      removeItem: (id) => {
-        const current = get().lines[id];
-        if (!current) return;
+      removeOrderLine: (id) =>
+        set((state) => {
+          const lines = { ...state.lines };
+          const current = lines[id];
+          if (!current) return state;
 
-        const quantity = current.quantity - 1;
-        const updated = { ...get().lines };
-
-        if (quantity > 0) {
-          updated[id] = { ...current, quantity };
-        } else {
-          delete updated[id];
-        }
-
-        set({ lines: updated });
-      },
+          const quantity = current.quantity - 1;
+          if (quantity > 0) {
+            lines[id] = { ...current, quantity };
+          } else {
+            delete lines[id];
+          }
+          return { lines };
+        }),
 
       addCustomOrder: (subject, description) => {
         const newOrder: CustomOrder = {
@@ -76,20 +76,22 @@ export const useOrderStore = create<OrderState>()(
         }));
       },
 
-      removeCustomOrder: (id) => {
+      removeCustomOrder: (id) =>
         set((state) => ({
-          customOrders: state.customOrders.filter(
-            (order) => order.id !== id
-          ),
-        }));
-      },
+          customOrders: state.customOrders.filter((order) => order.id !== id),
+        })),
 
-      total: () => {
-        const lines = get().lines;
-        return Object.values(lines).reduce(
-          (sum, l) => sum + l.price * l.quantity,
+      total: () =>
+        Object.values(get().lines).reduce(
+          (sum, line) => sum + line.price * line.quantity,
           0
-        );
+        ),
+
+      resetOrders: () => {
+        set({ lines: {}, customOrders: [] });
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("order-storage");
+        }
       },
     }),
     { name: "order-storage" }

@@ -14,7 +14,7 @@ export default function SignInPage() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8000/api/send-code", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/send-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -49,7 +49,7 @@ export default function SignInPage() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8000/api/register", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code, password }),

@@ -1,13 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "@/components/Ui/input"
 import { Textarea } from "@/components/Ui/textarea"
 import { Button } from "@/components/Ui/button"
 import { useCustomOrderStore } from "@/store/customOrderStore"
 import { TrashIcon, PencilIcon } from "@heroicons/react/24/outline"
 
-export default function CustomServicesTab() {
+interface Props {
+  onChange?: (customData: { id: string; subject: string; description: string }[]) => void
+}
+
+export default function CustomServicesTab({ onChange }: Props) {
   const [subject, setSubject] = useState("")
   const [description, setDescription] = useState("")
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -18,6 +22,10 @@ export default function CustomServicesTab() {
     deleteCustomOrder,
     updateCustomOrder,
   } = useCustomOrderStore()
+
+  useEffect(() => {
+    if (onChange) onChange(customOrders)
+  }, [customOrders, onChange])
 
   const handleSubmit = () => {
     if (!subject.trim() || !description.trim()) return
@@ -45,13 +53,14 @@ export default function CustomServicesTab() {
   return (
     <div className="space-y-6">
       <p className="text-sm text-gray-600">
-        If you have a special request that doesn’t fit into other categories, please describe it below.
+        Start by adding your custom service. You’ll be able to add another after that.
       </p>
 
       <div className="space-y-4">
         <div className="grid gap-2">
           <label className="text-sm font-medium">Subject</label>
           <Input
+            className="border border-Gray-2 rounded-3xl"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Fix zipper on jacket"
@@ -61,6 +70,7 @@ export default function CustomServicesTab() {
         <div className="grid gap-2">
           <label className="text-sm font-medium">Description</label>
           <Textarea
+            className="border border-Gray-2 rounded-3xl"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Provide additional details..."
@@ -68,23 +78,24 @@ export default function CustomServicesTab() {
           />
         </div>
 
+        <h6 className="font-bold">Notice:</h6>
         <p className="text-xs text-gray-500">
           We’ll do our best to accommodate your request. Our team will review and confirm via phone or email.
         </p>
 
-        <Button onClick={handleSubmit} className="bg-blue-600 hover:bg-blue-700 text-white">
-          {editingId ? "Update Request" : "Add Custom Request"}
+        <Button onClick={handleSubmit} className="bg-Secondary hover:bg-primary text-white">
+          {editingId ? "Update Request" : "Add to Checkout"}
         </Button>
       </div>
 
       {customOrders.length > 0 && (
         <div className="pt-6 border-t">
-          <h4 className="text-base font-semibold mb-4">Custom Services Summary</h4>
+          <h4 className="text-base font-semibold mb-4">Custom Services Summary:</h4>
           <ul className="space-y-4">
             {customOrders.map((order) => (
               <li
                 key={order.id}
-                className="p-3 border rounded-md shadow-sm bg-white space-y-1"
+                className="p-3 border border-Gray-2 rounded-3xl bg-white space-y-1"
               >
                 <div className="flex justify-between items-start">
                   <div>

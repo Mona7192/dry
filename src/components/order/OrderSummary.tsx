@@ -1,78 +1,122 @@
-// src/components/order/OrderSummary.tsx
-"use client"
-import { useCustomOrderStore } from "@/store/customOrderStore"
-import { useOrderStore } from "@/store/orderStore"
-import { useRouter } from "next/navigation"
+import { useOrderStore } from "@/store/orderStore";
+import { useCustomOrderStore } from "@/store/customOrderStore";
+import { useRouter } from "next/navigation";
 
 export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" }: { nextHref?: string }) {
-    const router = useRouter()
-    const lines = useOrderStore((s) => s.lines)
-    const total = useOrderStore((s) => s.total)()
+  const router = useRouter();
+  const lines = useOrderStore((state) => state.lines);
+  const customOrders = useCustomOrderStore((state) => state.customOrders);
+  const total = useOrderStore((state) => state.total());
 
-    const items = Object.values(lines)
-    const customOrders = useCustomOrderStore((s) => s.customOrders)
+  const items = Object.values(lines);
 
-    const handleContinue = () => {
-        const token = localStorage.getItem("token") // فرض می‌کنیم توکن اینجاست
-        if (!token) {
-            // اگر لاگین نیست → ریدایرکت به لاگین و مسیر فعلی رو ارسال کن
-            router.push(`/login?redirect=${encodeURIComponent(nextHref)}`)
-        } else {
-            // اگر لاگین هست → مستقیم به مسیر بعدی
-            router.push(nextHref)
-        }
+  const handleContinue = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push(`/login?redirect=${encodeURIComponent(nextHref)}`);
+    } else {
+      router.push(nextHref);
     }
+  };
 
-    return (
-        <aside className="sticky top-6 border rounded-xl p-4 bg-white shadow-sm">
-            <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+  // ✅ گروه‌بندی آیتم‌ها بر اساس دسته‌بندی اصلی
+  const groupedByMainCategory = items.reduce((acc: any, item: any) => {
+    const mainCategory = item.mainCategory || "Other"; // مثلا Laundry یا Bedding
+    if (!acc[mainCategory]) acc[mainCategory] = [];
+    acc[mainCategory].push(item);
+    return acc;
+  }, {});
 
-            {items.length === 0 ? (
-                <p className="text-sm text-gray-500">No items selected yet.</p>
-            ) : (
-                <ul className="space-y-2 mb-4 max-h-72 overflow-auto pr-2">
-                    {items.map((l) => (
-                        <li key={l.id} className="flex justify-between text-sm">
-                            <div className="flex flex-col">
-                                <span className="font-medium">{l.name}</span>
-                                <span className="text-xs text-gray-500">
-                                    {l.categoryTitle}
-                                    {l.serviceVariant ? ` • ${l.serviceVariant}` : ""}
-                                    {l.options?.length ? ` • ${l.options.join(", ")}` : ""}
-                                </span>
-                            </div>
-                            <div>
-                                {l.quantity} × £{l.price.toFixed(2)}
-                            </div>
-                        </li>
-                    ))}
-                    {customOrders.map((item) => (
-                        <li key={item.id} className="flex justify-between text-sm bg-gray-50 p-2 rounded">
-                            <div className="flex flex-col">
-                                <span className="font-medium">🛠 {item.subject}</span>
-                                <span className="text-xs text-gray-500">{item.description}</span>
-                            </div>
-                            <div>—</div>
-                        </li>
-                    ))}
-                </ul>
-            )}
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 max-w-md mx-auto sm:max-w-lg lg:max-w-xl border border-Gray-2">
+      <h2 className="text-2xl font-semibold mb-6 text-gray-800">Your Selected Services:</h2>
 
-            <div className="flex justify-between font-semibold border-t pt-3 mb-4">
-                <span>Total</span>
-                <span>£{total.toFixed(2)}</span>
+      {/* آیتم‌های سفارش */}
+      {items.length > 0 ? (
+        <div className="mb-6 space-y-6">
+          {Object.entries(groupedByMainCategory).map(([mainCategory, categoryItems]: any) => (
+            <div key={mainCategory}>
+              <ul className="divide-y divide-gray-200">
+                {categoryItems.map((item: any) => (
+                  <li key={item.id} className="py-4 sm:py-5">
+                    <div className="grid grid-cols-12 gap-4 items-center">
+                      
+                      {/* ستون جزئیات آیتم */}
+                      <div className="col-span-6">
+                        {item.categoryTitle && (
+                          <p className="text-primary font-medium text-sm">
+                            {item.categoryTitle}
+                          </p>
+                        )}
+                        <p className="font-medium text-gray-900">{item.name}</p>
+
+                        {item.serviceVariant && (
+                          <p className="text-gray-500 text-sm">{item.serviceVariant}</p>
+                        )}
+                        {item.options && item.options.length > 0 && (
+                          <p className="text-gray-500 text-sm mt-1">
+                            Options: {item.options.join(", ")}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* ستون تعداد */}
+                      <div className="col-span-3 text-center">
+                        <span className="text-gray-600 font-medium">
+                          {item.quantity}
+                        </span>
+                      </div>
+
+                      {/* ستون قیمت */}
+                      <div className="col-span-3 text-right">
+                        <span className="font-semibold text-gray-800">
+                          ${ (item.price * item.quantity).toFixed(2) }
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-400 mb-6">No items in your order yet.</p>
+      )}
 
-            <button
-                disabled={items.length === 0 && customOrders.length === 0}
-                onClick={handleContinue}
-                className={`w-full py-2 rounded-md text-white transition ${items.length === 0
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-Secondary hover:bg-transparent hover:border hover:text-Gray-1"
-                    }`}
-            >
-                Continue to delivery details
-            </button>
-        </aside>
-    )
+      {/* سفارش‌های سفارشی */}
+      {customOrders.length > 0 && (
+        <div className="mb-6">
+          <h3 className="font-semibold mb-3 text-gray-800">Custom Orders</h3>
+          <ul className="divide-y divide-gray-200">
+            {customOrders.map((order) => (
+              <li key={order.id} className="py-3">
+                <p className="font-medium text-gray-900">{order.subject}</p>
+                <p className="text-gray-500 text-sm">{order.description}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* جمع کل */}
+      <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-5 mt-5">
+        <span>Total:</span>
+        <span className="text-primary font-medium">£{total.toFixed(2)}</span>
+      </div>
+
+      {/* دکمه Continue */}
+      <button
+        disabled={items.length === 0 && customOrders.length === 0}
+        onClick={handleContinue}
+        className={`w-full py-2 rounded-md text-white transition my-5 ${
+          items.length === 0
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-primary hover:bg-Secondary hover:border"
+        }`}
+      >
+        Continue to delivery details
+      </button>
+    </div>
+  );
 }

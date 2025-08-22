@@ -130,3 +130,25 @@
   --color-light: #F7FFF8;
 
 }
+
+/* styles/global.css یا یک فایل CSS جداگانه */
+.order-steps {
+  position: relative;
+  z-index: 0;
+}
+
+.order-steps .flex.items-center > div {
+  position: relative;
+  z-index: 10;
+}
+
+.order-steps .h-1 {
+  position: absolute;
+  transition: background-color 0.3s;
+}
+
+.order-steps .border-l-8 {
+  border-left-color: currentColor;
+  transition: border-left-color 0.3s;
+  z-index: 5;
+}

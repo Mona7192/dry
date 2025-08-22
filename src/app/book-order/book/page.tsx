@@ -1,4 +1,4 @@
-// app/book-order/book/page.tsx
+
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -25,6 +25,7 @@ export default function BookOrderPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const handleConfirm = async () => {
     setError(null);
@@ -43,10 +44,11 @@ export default function BookOrderPage() {
       },
       total,
     };
+    console.log(payload);
 
     try {
       setLoading(true);
-      const res = await fetch("/api/orders", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,6 +58,8 @@ export default function BookOrderPage() {
       });
 
       const data = await res.json().catch(() => null);
+      console.log("Response:", res);
+      console.log("Data:", data);
 
       if (!res.ok) {
         const msg = data?.message || `Server returned ${res.status}`;
@@ -63,10 +67,14 @@ export default function BookOrderPage() {
         return;
       }
 
-      // ✅ موفقیت → نمایش مودال
-      setSuccessModal(true);
+      if (data?.success) {
+        setSuccessMessage(data?.message || "سفارش شما با موفقیت به ادمین ارسال شد.");
+        setSuccessModal(true);
+      } else {
+        setError("Order submission failed on server side.");
+      }
     } catch (err: any) {
-      setError(err?.message || "Network error");
+      setError(err?.message || "خطای شبکه");
     } finally {
       setLoading(false);
     }
@@ -76,27 +84,25 @@ export default function BookOrderPage() {
     <div className="px-6 py-10 bg-light">
       <OrderSteps />
 
-        <div className="flex">
+      <div className="flex flex-row justify-between items-start">
         <div className="basis-4/5">
           <h1 className="text-2xl font-bold mb-4">Short information::</h1>
           <p className="pb-4">Please review all details, and if everything looks correct, confirm your order</p>
         </div>
-        <div className="basis-1/5">
-           <button
-          onClick={handleConfirm}
-          disabled={loading || (orderItems.length === 0 && customOrders.length === 0)}
-          className={`py-2 px-6 rounded text-white ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}
+        <div className="basis-1/5 flex justify-end">
+          <button
+            onClick={handleConfirm}
+            disabled={loading || (orderItems.length === 0 && customOrders.length === 0)}
+            className={`py-2 px-6 rounded text-white ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}
           >
-          {loading ? "Processing..." : "Confirm Order"}
+            {loading ? "Processing..." : "Confirm Order"}
           </button>
         </div>
-       
       </div>
-      
-      
 
-      <div className="flex border rounded-lg p-4 mb-6 bg-white">
+      <div className="flex border rounded-3xl p-4 mb-6 bg-white">
         <div className="basis-2/3 overflow-x-auto">
+        <h5 className="font-bold text-xl py-2.5">Your selected service :</h5>
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b">
@@ -136,34 +142,60 @@ export default function BookOrderPage() {
             <p className="text-xl font-semibold">Total Price: £{total.toFixed(2)}</p>
           </div>
           {customOrders.length > 0 && (
-          <div className="mt-4 bg-orange-50 border border-orange-300 text-orange-700 p-3 rounded">
-            {customOrders.length} custom services — Their prices will be calculated after inspection and paid upon pickup.
-          </div>
-        )}
+            <div className="mt-4 bg-orange-50 border border-orange-300 text-orange-700 p-3 rounded">
+              {customOrders.length} custom services — Their prices will be calculated after inspection and paid upon pickup.
+            </div>
+          )}
         </div>
-
-        
       </div>
 
-      {/* Address & pickup/delivery */}
-      <div className="border rounded-lg p-4 mb-6 bg-white">
-        <div className="grid md:grid-cols-3 gap-4">
-          <div>
+      <div className="border rounded-3xl p-4 mb-6 bg-white">
+        <h5 className="font-bold text-xl py-2.5">Pickup & Delivery:</h5>
+        <div className="grid md:grid-cols-3 gap-4 ">
+          <div className="md:border-r border-r-Gray-2">
             <h4 className="font-semibold mb-2">Address:</h4>
-            <p className="text-sm"><span className="font-bold text-primary">Postcode</span>{pickupStore.postalCode || "-"}</p>
-            <p className="text-sm"><span className="font-bold text-primary">Full address</span>{pickupStore.fullAddress || "-"}</p>
+            <div className="flex">
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">Postcode</span>
+                <p className="text-sm">{pickupStore.postalCode || "-"}</p>
+              </div>
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">Full address</span>
+                <p className="text-sm">{pickupStore.fullAddress || "-"}</p>
+              </div>
+            </div>
           </div>
 
-          <div>
+          <div className="md:border-r md:border-r-Gray-2">
             <h4 className="font-semibold mb-2">Pickup Details:</h4>
-            <p className="text-sm">{pickupStore.pickupDate || "-"}</p>
-            <p className="text-sm">{pickupStore.pickupTime || "-"}</p>
+            <div className="flex">
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">pickupDate</span>
+                <p className="text-sm">{pickupStore.pickupDate || "-"}</p>
+              </div>
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">pickupTime</span>
+                <p className="text-sm">{pickupStore.pickupTime || "-"}</p>
+              </div>
+            </div>
+            
+            
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">Delivery Details:</h4>
-            <p className="text-sm">{pickupStore.deliveryDate || "-"}</p>
-            <p className="text-sm">{pickupStore.deliveryTime || "-"}</p>
+            <div className="flex">
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">deliveryDate</span>
+                <p className="text-sm">{pickupStore.deliveryDate || "-"}</p>
+              </div>
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">deliveryTime</span>
+                <p className="text-sm">{pickupStore.deliveryTime || "-"}</p>
+              </div>
+            </div>
+            
+            
           </div>
         </div>
       </div>
@@ -171,22 +203,22 @@ export default function BookOrderPage() {
       {error && <div className="mb-4 text-red-600">{error}</div>}
 
       <div className="flex gap-3">
-
         <button onClick={() => router.back()} className="py-2 px-6 rounded border">
           ← Back
         </button>
       </div>
 
-      {/* ✅ Success Modal */}
       {successModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
             <h2 className="text-xl font-bold text-green-600 mb-3">Order Submitted 🎉</h2>
-            <p className="text-gray-700 mb-4">Your order has been successfully sent to the admin.</p>
+            <p className="text-gray-700 mb-4">{successMessage || "سفارش شما با موفقیت به ادمین ارسال شد."}</p>
             <button
               onClick={() => {
                 setSuccessModal(false);
-                router.push("/"); // یا مثلا /orders
+                useOrderStore.getState().resetOrders();
+                useCustomOrderStore.getState().resetOrders();
+                router.push("/");
               }}
               className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
             >

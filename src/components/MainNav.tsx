@@ -2,15 +2,18 @@
 
 import Link from "next/link";
 import { FaSearch, FaUserCircle } from "react-icons/fa";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AuthModal from "./auth/AuthModal";
 import { useSession, signOut } from "next-auth/react";
+
 
 export default function MainNav() {
   const { data: session } = useSession();
   const [openAuth, setOpenAuth] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
 
+  
+  
   return (
     <div className="w-full bg-white py-3 px-4 shadow-sm flex items-center justify-between">
       {/* Navigation Links */}
@@ -69,6 +72,7 @@ export default function MainNav() {
         )}
 
         {openAuth && <AuthModal onClose={() => setOpenAuth(false)} />}
+       
       </div>
     </div>
   );
