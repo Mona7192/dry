@@ -8,26 +8,26 @@ const steps = [
   {
     number: 1,
     icon: <Truck className="w-6 h-6 text-white" />,
-    title: "Schedule Pickup",
-    description: "Choose a pickup time that works for you.",
+    title: "Choose Your Service",
+    description: "Select the laundry or duvet service that suits your needs — wash, fold, bed linens, or more",
   },
   {
     number: 2,
     icon: <WashingMachine className="w-6 h-6 text-white" />,
-    title: "We Clean",
-    description: "We clean and fold your laundry with care.",
+    title: "Schedule Pickup",
+    description: "Pick a convenient time and date for us to collect your laundry from your home or office.",
   },
   {
     number: 3,
-    icon: <Package className="w-6 h-6 text-white" />,
-    title: "Deliver",
-    description: "We deliver your clothes back, fresh and clean.",
+    icon: <WashingMachine className="w-6 h-6 text-white" />,
+    title: "We Clean With Care",
+    description: "We wash, dry, iron, and fold your items using eco-friendly products and professional equipment.",
   },
   {
     number: 4,
-    icon: <CreditCard className="w-6 h-14 text-white" />,
-    title: "Payment",
-    description: "Pay easily online or by wallet.",
+    icon: <Truck className="w-6 h-14 text-white" />,
+    title: "Delivery to Your Door",
+    description: "Your items are delivered fresh, folded, and ready to use — usually within 24–48 hours. easily online or by wallet.",
   },
 ];
 

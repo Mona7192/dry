@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -19,7 +18,7 @@ export default function BookOrderPage() {
   const customOrders = useCustomOrderStore((s) => s.customOrders);
   const pickupStore = usePickupDeliveryStore();
 
-  const orderItems = useMemo(() => Object.values(lines), [lines]);
+  const services = useMemo(() => Object.values(lines), [lines]);
   const total = totalFn();
 
   const [loading, setLoading] = useState(false);
@@ -31,15 +30,18 @@ export default function BookOrderPage() {
     setError(null);
 
     const payload = {
-      orderItems,
+      services,
       customOrders,
       pickupDelivery: {
-        postalCode: pickupStore.postalCode,
-        fullAddress: pickupStore.fullAddress,
-        driverNote: pickupStore.driverNote,
-        pickupDate: pickupStore.pickupDate,
+        name: pickupStore.name,
+        family_name: pickupStore.familyName,
+        phone: pickupStore.phone,
+        postal_code: pickupStore.postalCode,
+        address: pickupStore.fullAddress,
+        notes: pickupStore.driverNote,
+        user_sent_date: pickupStore.pickupDate,
         pickupTime: pickupStore.pickupTime,
-        deliveryDate: pickupStore.deliveryDate,
+        delivery_date: pickupStore.deliveryDate,
         deliveryTime: pickupStore.deliveryTime,
       },
       total,
@@ -81,29 +83,35 @@ export default function BookOrderPage() {
   };
 
   return (
-    <div className="px-6 py-10 bg-light">
+    <div className="px-4 md:px-6 py-10 bg-light">
       <OrderSteps />
 
-      <div className="flex flex-row justify-between items-start">
-        <div className="basis-4/5">
-          <h1 className="text-2xl font-bold mb-4">Short information::</h1>
-          <p className="pb-4">Please review all details, and if everything looks correct, confirm your order</p>
+      {/* header text + button */}
+      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+        <div className="basis-full md:basis-4/5">
+          <h1 className="text-2xl font-bold mb-4">Short information:</h1>
+          <p className="pb-4">
+            Please review all details, and if everything looks correct, confirm your order
+          </p>
         </div>
-        <div className="basis-1/5 flex justify-end">
+        <div className="basis-full md:basis-1/5 flex justify-start md:justify-end">
           <button
             onClick={handleConfirm}
-            disabled={loading || (orderItems.length === 0 && customOrders.length === 0)}
-            className={`py-2 px-6 rounded text-white ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"}`}
+            disabled={loading || (services.length === 0 && customOrders.length === 0)}
+            className={`w-full md:w-auto py-2 px-6 rounded text-white ${
+              loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+            }`}
           >
             {loading ? "Processing..." : "Confirm Order"}
           </button>
         </div>
       </div>
 
-      <div className="flex border rounded-3xl p-4 mb-6 bg-white">
-        <div className="basis-2/3 overflow-x-auto">
-        <h5 className="font-bold text-xl py-2.5">Your selected service :</h5>
-          <table className="w-full text-left border-collapse">
+      {/* Services table + total */}
+      <div className="flex flex-col md:flex-row border rounded-3xl p-4 mb-6 bg-white gap-4">
+        <div className="basis-full md:basis-2/3 overflow-x-auto">
+          <h5 className="font-bold text-xl py-2.5">Your selected service :</h5>
+          <table className="w-full min-w-[500px] text-left border-collapse">
             <thead>
               <tr className="border-b">
                 <th className="py-2 px-4">Service</th>
@@ -113,13 +121,17 @@ export default function BookOrderPage() {
               </tr>
             </thead>
             <tbody>
-              {orderItems.map((it) => (
+              {services.map((it) => (
                 <tr key={it.id} className="border-b">
                   <td className="py-2 px-4">{it.categoryTitle || "Service"}</td>
                   <td className="py-2 px-4">{it.name}</td>
                   <td className="py-2 px-4">{it.quantity}</td>
                   <td className="py-2 px-4 font-semibold">
-                    {typeof it.price === "number" ? `£${(it.price * it.quantity).toFixed(2)}` : <span className="text-orange-500">To be confirmed</span>}
+                    {typeof it.price === "number" ? (
+                      `£${(it.price * it.quantity).toFixed(2)}`
+                    ) : (
+                      <span className="text-orange-500">To be confirmed</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -136,25 +148,48 @@ export default function BookOrderPage() {
           </table>
         </div>
 
-        <div className="basis-1/3 justify-between items-center mt-4 px-4 border-l ml-2.5">
+        <div className="basis-full md:basis-1/3 mt-4 md:mt-0 px-0 md:px-4 md:border-l md:ml-2.5">
           <div>
-            <p>Total Item: {orderItems.reduce((s, it) => s + it.quantity, 0) + customOrders.length}</p>
+            <p>
+              Total Item:{" "}
+              {services.reduce((s, it) => s + it.quantity, 0) + customOrders.length}
+            </p>
             <p className="text-xl font-semibold">Total Price: £{total.toFixed(2)}</p>
           </div>
           {customOrders.length > 0 && (
             <div className="mt-4 bg-orange-50 border border-orange-300 text-orange-700 p-3 rounded">
-              {customOrders.length} custom services — Their prices will be calculated after inspection and paid upon pickup.
+              {customOrders.length} custom services — Their prices will be calculated after
+              inspection and paid upon pickup.
             </div>
           )}
         </div>
       </div>
 
+      {/* Pickup & Delivery */}
       <div className="border rounded-3xl p-4 mb-6 bg-white">
         <h5 className="font-bold text-xl py-2.5">Pickup & Delivery:</h5>
-        <div className="grid md:grid-cols-3 gap-4 ">
-          <div className="md:border-r border-r-Gray-2">
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:border-r border-r-Gray-2 pr-2">
+            <h4 className="font-semibold mb-2">Information Contact:</h4>
+            <div className="flex flex-wrap gap-4">
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">Name</span>
+                <p className="text-sm">{pickupStore.name || "-"}</p>
+              </div>
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">Family Name</span>
+                <p className="text-sm">{pickupStore.familyName || "-"}</p>
+              </div>
+              <div className="basis-1/2">
+                <span className="font-bold text-primary">Phone</span>
+                <p className="text-sm">{pickupStore.phone || "-"}</p>
+              </div>
+            </div>
+          </div>
+          <div className="md:border-r border-r-Gray-2 pr-2">
             <h4 className="font-semibold mb-2">Address:</h4>
-            <div className="flex">
+            <div className="flex flex-wrap gap-4">
               <div className="basis-1/2">
                 <span className="font-bold text-primary">Postcode</span>
                 <p className="text-sm">{pickupStore.postalCode || "-"}</p>
@@ -166,9 +201,9 @@ export default function BookOrderPage() {
             </div>
           </div>
 
-          <div className="md:border-r md:border-r-Gray-2">
+          <div className="md:border-r md:border-r-Gray-2 pr-2">
             <h4 className="font-semibold mb-2">Pickup Details:</h4>
-            <div className="flex">
+            <div className="flex flex-wrap gap-4">
               <div className="basis-1/2">
                 <span className="font-bold text-primary">pickupDate</span>
                 <p className="text-sm">{pickupStore.pickupDate || "-"}</p>
@@ -178,13 +213,11 @@ export default function BookOrderPage() {
                 <p className="text-sm">{pickupStore.pickupTime || "-"}</p>
               </div>
             </div>
-            
-            
           </div>
 
           <div>
             <h4 className="font-semibold mb-2">Delivery Details:</h4>
-            <div className="flex">
+            <div className="flex flex-wrap gap-4">
               <div className="basis-1/2">
                 <span className="font-bold text-primary">deliveryDate</span>
                 <p className="text-sm">{pickupStore.deliveryDate || "-"}</p>
@@ -194,16 +227,17 @@ export default function BookOrderPage() {
                 <p className="text-sm">{pickupStore.deliveryTime || "-"}</p>
               </div>
             </div>
-            
-            
           </div>
         </div>
       </div>
 
       {error && <div className="mb-4 text-red-600">{error}</div>}
 
-      <div className="flex gap-3">
-        <button onClick={() => router.back()} className="py-2 px-6 rounded border">
+      <div className="flex flex-col md:flex-row gap-3">
+        <button
+          onClick={() => router.back()}
+          className="w-full md:w-auto py-2 px-6 rounded border"
+        >
           ← Back
         </button>
       </div>
@@ -212,7 +246,9 @@ export default function BookOrderPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
             <h2 className="text-xl font-bold text-green-600 mb-3">Order Submitted 🎉</h2>
-            <p className="text-gray-700 mb-4">{successMessage || "سفارش شما با موفقیت به ادمین ارسال شد."}</p>
+            <p className="text-gray-700 mb-4">
+              {successMessage || "سفارش شما با موفقیت به ادمین ارسال شد."}
+            </p>
             <button
               onClick={() => {
                 setSuccessModal(false);

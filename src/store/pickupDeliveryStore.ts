@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 type PickupDeliveryState = {
+  name: string
+  familyName: string
+  phone: string
   postalCode: string;
   fullAddress: string;
   driverNote: string;
@@ -16,6 +19,9 @@ type PickupDeliveryState = {
 export const usePickupDeliveryStore = create<PickupDeliveryState>()(
   persist(
     (set) => ({
+      name: "",
+      familyName: "",
+      phone: "",
       postalCode: "",
       fullAddress: "",
       driverNote: "",
@@ -28,6 +34,9 @@ export const usePickupDeliveryStore = create<PickupDeliveryState>()(
 
       reset: () =>
         set({
+          name: "",
+          familyName: "",
+          phone: "",
           postalCode: "",
           fullAddress: "",
           driverNote: "",
