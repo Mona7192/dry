@@ -1,10 +1,17 @@
 import FeatureCard from './FeatureCard'
-import { features } from '@/data/features'
 import Image from 'next/image'
+import { Truck, Clock, Users, Shield } from 'lucide-react';
+
+const features = [
+  { title: 'Free Collection & Delivery', icon: Truck },
+  { title: '24-48 Hour Turnaround', icon: Clock },
+  { title: 'Eco-Friendly Detergents', icon: Users },
+  { title: 'Trusted by 1000+ Customers', icon: Shield },
+];
 
 export default function FeaturesSection() {
   return (
-    <section className="py-20 bg-gray-100">
+    <section className="py-20 bg-light">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
 
@@ -21,16 +28,13 @@ export default function FeaturesSection() {
           <div>
             <p className="text-primary font-bold text-2xl py-8">Why Customers Love Us</p>
             {/* Right - Features in 2x2 Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {features.map((feature) => (
-              <FeatureCard
-                key={feature.title}
-                title={feature.title}
-                description={feature.description}
-                icon={feature.icon}
-              />
-            ))}
-          </div>
+           <div className="container mx-auto px-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {features.map((feature, index) => (
+            <FeatureCard key={index} title={feature.title} icon={feature.icon} />
+          ))}
+             </div>
+           </div>
           </div>
           
           
@@ -39,3 +43,9 @@ export default function FeaturesSection() {
     </section>
   )
 }
+
+
+
+
+
+

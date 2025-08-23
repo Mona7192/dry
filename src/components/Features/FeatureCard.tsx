@@ -1,21 +1,17 @@
-import { LucideIcon } from 'lucide-react'
+import { LucideIcon } from 'lucide-react';
 
 interface Props {
-  title: string
-  description: string
-  icon: LucideIcon
+  title: string;
+  icon: LucideIcon;
 }
 
-export default function FeatureCard({ title, description, icon: Icon }: Props) {
+export default function FeatureCard({ title, icon: Icon }: Props) {
   return (
-    <div className="bg-white outline-[#B1B1B1] rounded-xl p-6 text-center hover:shadow-lg transition">
-      <div className="flex justify-center mb-4">
-        <div className="bg-primary text-white rounded-xs p-3">
-          <Icon size={24} />
-        </div>
+    <div className="flex items-center bg-white rounded-lg p-4 m-2 border border-Gray-2">
+      <div className="bg-primary text-white rounded-md p-2 mr-4">
+        <Icon size={24} />
       </div>
-       {/* <h4 className="text-lg font-semibold mb-2">{title}</h4> */}
-      <p className="text-gray-600 text-sm">{description}</p>
+      <p className="text-gray-700 text-sm">{title}</p>
     </div>
-  )
+  );
 }
