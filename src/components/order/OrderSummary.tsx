@@ -1,9 +1,12 @@
 import { useOrderStore } from "@/store/orderStore";
 import { useCustomOrderStore } from "@/store/customOrderStore";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" }: { nextHref?: string }) {
   const router = useRouter();
+  const { data: session } = useSession();
+
   const lines = useOrderStore((state) => state.lines);
   const customOrders = useCustomOrderStore((state) => state.customOrders);
   const total = useOrderStore((state) => state.total());
@@ -11,11 +14,10 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
   const items = Object.values(lines);
 
   const handleContinue = () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push(`/login?redirect=${encodeURIComponent(nextHref)}`);
+    if (!session) {
+      router.push(`/login?redirect=${encodeURIComponent(nextHref)}`); // ✅ بفرست لاگین با redirect
     } else {
-      router.push(nextHref);
+      router.push(nextHref); // ✅ اگر لاگین بود مستقیماً برو
     }
   };
 
@@ -40,7 +42,7 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
                 {categoryItems.map((item: any) => (
                   <li key={item.id} className="py-4 sm:py-5">
                     <div className="grid grid-cols-12 gap-4 items-center">
-                      
+
                       {/* ستون جزئیات آیتم */}
                       <div className="col-span-6">
                         {item.categoryTitle && (
@@ -70,7 +72,7 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
                       {/* ستون قیمت */}
                       <div className="col-span-3 text-right">
                         <span className="font-semibold text-gray-800">
-                          ${ (item.price * item.quantity).toFixed(2) }
+                          ${(item.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     </div>
@@ -109,11 +111,10 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
       <button
         disabled={items.length === 0 && customOrders.length === 0}
         onClick={handleContinue}
-        className={`w-full py-2 rounded-md text-white transition my-5 ${
-          items.length === 0
+        className={`w-full py-2 rounded-md text-white transition my-5 ${items.length === 0
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-primary hover:bg-Secondary hover:border"
-        }`}
+          }`}
       >
         Continue to delivery details
       </button>

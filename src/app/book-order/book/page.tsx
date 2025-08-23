@@ -9,6 +9,7 @@ import { useCustomOrderStore } from "@/store/customOrderStore";
 import { usePickupDeliveryStore } from "@/store/pickupDeliveryStore";
 import OrderSteps from "@/components/order/OrderSteps";
 
+
 export default function BookOrderPage() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -32,21 +33,9 @@ export default function BookOrderPage() {
     const payload = {
       services,
       customOrders,
-      pickupDelivery: {
-        name: pickupStore.name,
-        family_name: pickupStore.familyName,
-        phone: pickupStore.phone,
-        postal_code: pickupStore.postalCode,
-        address: pickupStore.fullAddress,
-        notes: pickupStore.driverNote,
-        user_sent_date: pickupStore.pickupDate,
-        pickupTime: pickupStore.pickupTime,
-        delivery_date: pickupStore.deliveryDate,
-        deliveryTime: pickupStore.deliveryTime,
-      },
+      pickupDelivery: { /* ... بقیه فیلدها ... */ },
       total,
     };
-    console.log(payload);
 
     try {
       setLoading(true);
@@ -54,8 +43,8 @@ export default function BookOrderPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${(session as any)?.accessToken}`, // ✅ توکن از NextAuth
         },
-        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -70,7 +59,7 @@ export default function BookOrderPage() {
       }
 
       if (data?.success) {
-        setSuccessMessage(data?.message || "سفارش شما با موفقیت به ادمین ارسال شد.");
+        setSuccessMessage(data?.message || "سفارش شما با موفقیت ثبت شد.");
         setSuccessModal(true);
       } else {
         setError("Order submission failed on server side.");
@@ -98,9 +87,8 @@ export default function BookOrderPage() {
           <button
             onClick={handleConfirm}
             disabled={loading || (services.length === 0 && customOrders.length === 0)}
-            className={`w-full md:w-auto py-2 px-6 rounded text-white ${
-              loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
-            }`}
+            className={`w-full md:w-auto py-2 px-6 rounded text-white ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"
+              }`}
           >
             {loading ? "Processing..." : "Confirm Order"}
           </button>

@@ -1,29 +1,25 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function ProtectedPageWrapper({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedPageWrapper({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      const modal = document.getElementById("auth-modal");
-      if (modal) modal.classList.remove("hidden");
+      router.push("/login");
     }
-  }, [status]);
+  }, [status, router]);
 
   if (status === "loading") {
-    return <p>Loading...</p>;
+    return <div className="text-center mt-4">در حال بارگذاری...</div>;
   }
 
   if (!session) {
-    // وقتی لاگین نیست، children نشون داده نمی‌شن
-    return <p className="text-center mt-4">لطفاً ابتدا وارد شوید...</p>;
+    return null;
   }
 
   return <>{children}</>;
