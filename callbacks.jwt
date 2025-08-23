@@ -1,20 +1,14 @@
 callbacks: {
   async jwt({ token, user }) {
     if (user) {
-      token.id = user.id;
-      token.name = user.name;
-      token.email = user.email;
-      token.accessToken = user.token;
+      token.accessToken = user.accessToken;
+      console.log("JWT Callback - Token:", token);
     }
     return token;
   },
   async session({ session, token }) {
-    session.user = {
-      id: token.id,
-      name: token.name,
-      email: token.email,
-    };
     session.accessToken = token.accessToken;
+    console.log("Session Callback - Session:", session);
     return session;
   },
 }

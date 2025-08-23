@@ -26,6 +26,7 @@ export default function BookOrderPage() {
   const [error, setError] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string>("");
+  const token = localStorage.getItem('token');
 
   const handleConfirm = async () => {
     setError(null);
@@ -39,11 +40,13 @@ export default function BookOrderPage() {
 
     try {
       setLoading(true);
+      console.log("🔑 token:", token);
+      console.log("🔑 payload:", JSON.stringify(payload));
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${(session as any)?.accessToken}`, // ✅ توکن از NextAuth
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });

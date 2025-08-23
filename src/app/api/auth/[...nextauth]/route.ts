@@ -11,21 +11,46 @@ export const authOptions: NextAuthOptions = {
         password: { label: "رمز عبور", type: "password" },
       },
       async authorize(credentials) {
-        // نمونه تستی
-        if (
-          credentials?.email === "test@test.com" &&
-          credentials?.password === "123456"
-        ) {
-          // اینجا فرض کن از API لاگین یک token گرفتی
-          return {
-            id: "1",
-            name: "کاربر تستی",
-            email: "test@test.com",
-            accessToken: "fake-jwt-token-123", // ✅ اضافه کردن توکن
-          };
+        if (!credentials?.email || !credentials?.password) {
+          console.error("ایمیل یا رمز عبور ارائه نشده است");
+          return null;
         }
-        // لاگین ناموفق
-        return null;
+
+        try {
+          // فراخوانی API لاگین بک‌اند
+          const res = await fetch(
+            "https://intrcmpa-opsusm-887420.hostingersite.com/api/auth/login",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+              }),
+            }
+          );
+
+          const data = await res.json();
+
+          if (!res.ok || !data?.accessToken) {
+            console.error("خطا در لاگین:", data?.message || `HTTP ${res.status}`);
+            return null;
+          }
+
+          // فرض می‌کنیم بک‌اند پاسخ زیر رو می‌ده:
+          // { user: { id, name, email }, accessToken }
+          return {
+            id: data.user.id.toString(), // NextAuth نیاز به id به صورت رشته داره
+            name: data.user.name || null,
+            email: data.user.email,
+            accessToken: data.accessToken, // ذخیره توکن
+          };
+        } catch (error) {
+          console.error("خطا در authorize:", error);
+          return null;
+        }
       },
     }),
   ],
@@ -38,15 +63,15 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // وقتی لاگین شدی
       if (user) {
-        token.accessToken = (user as any).accessToken; // ✅ توکن رو تو jwt ذخیره کن
+        token.accessToken = user.accessToken; // ذخیره توکن در JWT
+        console.log("JWT Callback - Token:", token);
       }
       return token;
     },
     async session({ session, token }) {
-      // هر بار که session خونده شد، توکن رو اضافه کن
-      (session as any).accessToken = token.accessToken;
+      session.accessToken = token.accessToken; // انتقال توکن به session
+      console.log("Session Callback - Session:", session);
       return session;
     },
   },
