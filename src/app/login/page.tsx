@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (response.ok) {
         // ذخیره توکن در localStorage
         localStorage.setItem('token', data.token || data.access_token);
-        router.push('/dashboard'); // بعد از لاگین موفق به داشبورد
+        router.push('/'); // بعد از لاگین موفق به داشبورد
       } else {
         setError(data.message || 'ایمیل یا رمز عبور اشتباه است');
       }

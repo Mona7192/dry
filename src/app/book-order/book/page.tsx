@@ -109,8 +109,8 @@ export default function BookOrderPage() {
         setError(msg);
         return;
       }
+      if (res.status == 201) {
 
-      if (data?.success) {
         setSuccessMessage(data?.message || "سفارش شما با موفقیت ثبت شد.");
         setSuccessModal(true);
       } else {
