@@ -1,99 +1,98 @@
-import { create } from "zustand";
-import { nanoid } from "nanoid";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
 
-export type OrderItem = {
+interface OrderLine {
   id: string;
   name: string;
   price: number;
   quantity: number;
   categoryTitle?: string;
-  serviceVariant?: string;
-  options?: string[];
-};
+}
 
-export type CustomOrder = {
-  id: string;
-  subject: string;
-  description: string;
-};
-
-export type OrderState = {
-  lines: { [id: string]: OrderItem };
-  customOrders: CustomOrder[];
-  addOrderLine: (item: Partial<OrderItem>) => void;
+interface OrderStore {
+  lines: Record<string, OrderLine>;
+  addOrderLine: (item: OrderLine) => void;
+  updateQuantity: (id: string, quantity: number) => void;
   removeOrderLine: (id: string) => void;
-  addCustomOrder: (subject: string, description: string) => void;
-  removeCustomOrder: (id: string) => void;
-  total: () => number;
   resetOrders: () => void;
-};
+  total: () => number;
+}
 
-export const useOrderStore = create<OrderState>()(
-  persist(
+export const useOrderStore = create<OrderStore>()(
+  devtools(
     (set, get) => ({
       lines: {},
-      customOrders: [],
 
-      addOrderLine: (item) =>
+      addOrderLine: (item) => {
+        // بررسی اینکه آیتم valid است
+        if (!item || typeof item !== 'object') {
+          console.warn('Invalid item passed to addOrderLine:', item);
+          return;
+        }
+
         set((state) => {
           const lines = { ...state.lines };
+
           if (item.quantity === 0 && item.id) {
+            // حذف آیتم اگر quantity صفر است
             delete lines[item.id];
-          } else if (item.id) {
-            lines[item.id] = {
-              ...lines[item.id],
-              ...item,
-              quantity: item.quantity || (lines[item.id]?.quantity || 0) + 1,
-            };
+          } else if (item.quantity > 0 && item.id) {
+            // اضافه یا آپدیت آیتم
+            lines[item.id] = { ...item };
           }
+
           return { lines };
-        }),
-
-      removeOrderLine: (id) =>
-        set((state) => {
-          const lines = { ...state.lines };
-          const current = lines[id];
-          if (!current) return state;
-
-          const quantity = current.quantity - 1;
-          if (quantity > 0) {
-            lines[id] = { ...current, quantity };
-          } else {
-            delete lines[id];
-          }
-          return { lines };
-        }),
-
-      addCustomOrder: (subject, description) => {
-        const newOrder: CustomOrder = {
-          id: nanoid(),
-          subject,
-          description,
-        };
-        set((state) => ({
-          customOrders: [...state.customOrders, newOrder],
-        }));
+        });
       },
 
-      removeCustomOrder: (id) =>
-        set((state) => ({
-          customOrders: state.customOrders.filter((order) => order.id !== id),
-        })),
+      updateQuantity: (id, quantity) => {
+        if (!id || quantity < 0) {
+          console.warn('Invalid parameters for updateQuantity:', { id, quantity });
+          return;
+        }
 
-      total: () =>
-        Object.values(get().lines).reduce(
-          (sum, line) => sum + line.price * line.quantity,
-          0
-        ),
+        set((state) => {
+          const lines = { ...state.lines };
+
+          if (quantity === 0) {
+            delete lines[id];
+          } else if (lines[id]) {
+            lines[id] = { ...lines[id], quantity };
+          }
+
+          return { lines };
+        });
+      },
+
+      removeOrderLine: (id) => {
+        if (!id) {
+          console.warn('Invalid id passed to removeOrderLine:', id);
+          return;
+        }
+
+        set((state) => {
+          const lines = { ...state.lines };
+          delete lines[id];
+          return { lines };
+        });
+      },
 
       resetOrders: () => {
-        set({ lines: {}, customOrders: [] });
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("order-storage");
-        }
+        set({ lines: {} });
+      },
+
+      total: () => {
+        const { lines } = get();
+        return Object.values(lines).reduce((sum, line) => {
+          if (typeof line.price === 'number') {
+            return sum + (line.price * line.quantity);
+          }
+          return sum;
+        }, 0);
       },
     }),
-    { name: "order-storage" }
+    {
+      name: 'order-store',
+    }
   )
 );

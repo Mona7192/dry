@@ -1,26 +1,26 @@
-"use client";
-
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 import { Button } from "@/components/Ui/button";
 import { Input } from "@/components/Ui/input";
 import { Label } from "@/components/Ui/label";
 import { Card } from "@/components/Ui/card";
+import { Mail, Lock, User, Shield, ArrowLeft } from "lucide-react";
 
-interface AuthModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  initialTab?: "login" | "register";
-}
+export default function AuthModal() {
+  const {
+    showAuthModal,
+    authModalTab,
+    pendingEmail,
+    isLoading,
+    closeAuthModal,
+    setAuthModalTab,
+    login,
+    sendVerificationCode,
+    register,
+  } = useUserStore();
 
-export default function AuthModal({
-  isOpen,
-  onClose,
-  initialTab = "login"
-}: AuthModalProps) {
-  const [activeTab, setActiveTab] = useState<"login" | "register">(initialTab);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Form states
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -28,115 +28,167 @@ export default function AuthModal({
     name: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
+  const [verificationCode, setVerificationCode] = useState("");
 
-  const { login, register } = useUserStore();
+  useEffect(() => {
+    if (!showAuthModal) {
+      // Reset form when modal closes
+      setError("");
+      setSuccess("");
+      setLoginData({ email: "", password: "" });
+      setRegisterData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+      setVerificationCode("");
+    }
+  }, [showAuthModal]);
 
-  if (!isOpen) return null;
+  if (!showAuthModal) return null;
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleLogin = async () => {
     setError("");
+    setSuccess("");
 
-    try {
-      const result = await login(loginData.email, loginData.password);
-      if (result.success) {
-        onClose();
-        setLoginData({ email: "", password: "" });
-      } else {
-        setError(result.message || "Login failed");
-      }
-    } catch (error) {
-      setError("Login failed. Please try again.");
-    } finally {
-      setLoading(false);
+    if (!loginData.email || !loginData.password) {
+      setError("Please fill in all fields");
+      return;
+    }
+
+    const result = await login(loginData.email, loginData.password);
+    if (!result.success) {
+      setError(result.message || "Login failed");
     }
   };
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setSuccess("");
 
-    // Validation
+    if (
+      !registerData.name ||
+      !registerData.email ||
+      !registerData.password ||
+      !registerData.confirmPassword
+    ) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     if (registerData.password !== registerData.confirmPassword) {
       setError("Passwords don't match");
-      setLoading(false);
       return;
     }
 
     if (registerData.password.length < 6) {
       setError("Password must be at least 6 characters");
-      setLoading(false);
       return;
     }
 
-    try {
-      const result = await register(
-        registerData.name,
-        registerData.email,
-        registerData.password
-      );
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registerData.email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
-      if (result.success) {
-        onClose();
-        setRegisterData({ name: "", email: "", password: "", confirmPassword: "" });
-      } else {
-        setError(result.message || "Registration failed");
-      }
-    } catch (error) {
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+    const result = await sendVerificationCode(
+      registerData.name,
+      registerData.email,
+      registerData.password
+    );
+
+    if (result.success) {
+      setSuccess(result.message || "Verification code sent to your email");
+    } else {
+      setError(result.message || "Failed to send verification code");
+    }
+  };
+
+  const handleVerifyAndRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    if (!verificationCode) {
+      setError("Please enter the verification code");
+      return;
+    }
+
+    if (verificationCode.length !== 6) {
+      setError("Verification code must be 6 digits");
+      return;
+    }
+
+    const result = await register(
+      registerData.name,
+      registerData.email,
+      registerData.password,
+      verificationCode
+    );
+
+    if (!result.success) {
+      setError(result.message || "Registration failed");
     }
   };
 
   const switchTab = (tab: "login" | "register") => {
-    setActiveTab(tab);
+    setAuthModalTab(tab);
     setError("");
-    setLoginData({ email: "", password: "" });
-    setRegisterData({ name: "", email: "", password: "", confirmPassword: "" });
+    setSuccess("");
   };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md p-6 bg-white rounded-lg">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">
-            {activeTab === "login" ? "Sign In" : "Create Account"}
+            {authModalTab === "login" && "Welcome Back"}
+            {authModalTab === "register" && "Create Account"}
+            {authModalTab === "verify" && "Verify Email"}
           </h2>
           <button
-            onClick={onClose}
+            onClick={closeAuthModal}
             className="text-gray-500 hover:text-gray-700 text-2xl"
           >
             ×
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex mb-6 border-b">
-          <button
-            onClick={() => switchTab("login")}
-            className={`flex-1 py-2 px-4 font-medium ${activeTab === "login"
+        {/* Tab Switcher - Only show for login/register */}
+        {authModalTab !== "verify" && (
+          <div className="flex mb-6 border-b">
+            <button
+              onClick={() => switchTab("login")}
+              className={`flex-1 py-2 px-4 font-medium ${authModalTab === "login"
                 ? "border-b-2 border-blue-500 text-blue-600"
                 : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            Sign In
-          </button>
-          <button
-            onClick={() => switchTab("register")}
-            className={`flex-1 py-2 px-4 font-medium ${activeTab === "register"
+                }`}
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => switchTab("register")}
+              className={`flex-1 py-2 px-4 font-medium ${authModalTab === "register"
                 ? "border-b-2 border-blue-500 text-blue-600"
                 : "text-gray-500 hover:text-gray-700"
-              }`}
-          >
-            Register
-          </button>
-        </div>
+                }`}
+            >
+              Register
+            </button>
+          </div>
+        )}
+
+        {/* Success Message */}
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            {success}
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -146,10 +198,13 @@ export default function AuthModal({
         )}
 
         {/* Login Form */}
-        {activeTab === "login" && (
-          <form onSubmit={handleLogin} className="space-y-4">
+        {authModalTab === "login" && (
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email
+              </Label>
               <Input
                 id="login-email"
                 type="email"
@@ -160,11 +215,15 @@ export default function AuthModal({
                 placeholder="Enter your email"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <div>
-              <Label htmlFor="login-password">Password</Label>
+              <Label htmlFor="login-password" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Password
+              </Label>
               <Input
                 id="login-password"
                 type="password"
@@ -175,24 +234,28 @@ export default function AuthModal({
                 placeholder="Enter your password"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <Button
-              type="submit"
-              disabled={loading}
+              onClick={handleLogin}
+              disabled={isLoading}
               className="w-full"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
-          </form>
+          </div>
         )}
 
-        {/* Register Form */}
-        {activeTab === "register" && (
-          <form onSubmit={handleRegister} className="space-y-4">
+        {/* Register Form - Step 1 */}
+        {authModalTab === "register" && (
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="register-name">Full Name</Label>
+              <Label htmlFor="register-name" className="flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Full Name
+              </Label>
               <Input
                 id="register-name"
                 type="text"
@@ -203,11 +266,15 @@ export default function AuthModal({
                 placeholder="Enter your full name"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <div>
-              <Label htmlFor="register-email">Email</Label>
+              <Label htmlFor="register-email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email
+              </Label>
               <Input
                 id="register-email"
                 type="email"
@@ -218,11 +285,15 @@ export default function AuthModal({
                 placeholder="Enter your email"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <div>
-              <Label htmlFor="register-password">Password</Label>
+              <Label htmlFor="register-password" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Password
+              </Label>
               <Input
                 id="register-password"
                 type="password"
@@ -230,14 +301,18 @@ export default function AuthModal({
                 onChange={(e) =>
                   setRegisterData({ ...registerData, password: e.target.value })
                 }
-                placeholder="Enter your password"
+                placeholder="Enter your password (min 6 characters)"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <div>
-              <Label htmlFor="register-confirm-password">Confirm Password</Label>
+              <Label htmlFor="register-confirm-password" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Confirm Password
+              </Label>
               <Input
                 id="register-confirm-password"
                 type="password"
@@ -248,43 +323,107 @@ export default function AuthModal({
                 placeholder="Confirm your password"
                 required
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
 
             <Button
-              type="submit"
-              disabled={loading}
+              onClick={handleSendCode}
+              disabled={isLoading}
               className="w-full"
             >
-              {loading ? "Creating Account..." : "Create Account"}
+              {isLoading ? "Sending Code..." : "Send Verification Code"}
             </Button>
-          </form>
+          </div>
         )}
 
-        {/* Footer */}
-        <div className="mt-6 text-center text-sm text-gray-600">
-          {activeTab === "login" ? (
-            <p>
-              Don't have an account?{" "}
-              <button
-                onClick={() => switchTab("register")}
-                className="text-blue-600 hover:underline font-medium"
+        {/* Email Verification - Step 2 */}
+        {authModalTab === "verify" && (
+          <div className="space-y-4">
+            <div className="text-center">
+              <Shield className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+              <p className="text-gray-600">
+                We've sent a 6-digit verification code to:
+              </p>
+              <p className="font-semibold text-blue-600">
+                {pendingEmail}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Please check your email and enter the code below
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="verification-code" className="flex items-center gap-2 justify-center">
+                  <Shield className="w-4 h-4" />
+                  Verification Code
+                </Label>
+                <Input
+                  id="verification-code"
+                  type="text"
+                  value={verificationCode}
+                  onChange={(e) => {
+                    // Only allow numbers and limit to 6 digits
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setVerificationCode(value);
+                  }}
+                  placeholder="Enter 6-digit code"
+                  required
+                  className="mt-1 text-center text-lg tracking-widest"
+                  disabled={isLoading}
+                  maxLength={6}
+                />
+              </div>
+
+              <Button
+                onClick={handleVerifyAndRegister}
+                disabled={isLoading || verificationCode.length !== 6}
+                className="w-full"
               >
-                Sign up here
-              </button>
-            </p>
-          ) : (
-            <p>
-              Already have an account?{" "}
+                {isLoading ? "Verifying..." : "Complete Registration"}
+              </Button>
+
               <button
-                onClick={() => switchTab("login")}
-                className="text-blue-600 hover:underline font-medium"
+                onClick={() => setAuthModalTab("register")}
+                className="w-full flex items-center justify-center gap-2 text-gray-600 hover:text-gray-800 py-2"
+                disabled={isLoading}
               >
-                Sign in here
+                <ArrowLeft className="w-4 h-4" />
+                Back to Registration
               </button>
-            </p>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
+
+        {/* Footer - Only show for login/register */}
+        {authModalTab !== "verify" && (
+          <div className="mt-6 text-center text-sm text-gray-600">
+            {authModalTab === "login" ? (
+              <p>
+                Don't have an account?{" "}
+                <button
+                  onClick={() => switchTab("register")}
+                  className="text-blue-600 hover:underline font-medium"
+                  disabled={isLoading}
+                >
+                  Sign up here
+                </button>
+              </p>
+            ) : (
+              <p>
+                Already have an account?{" "}
+                <button
+                  onClick={() => switchTab("login")}
+                  className="text-blue-600 hover:underline font-medium"
+                  disabled={isLoading}
+                >
+                  Sign in here
+                </button>
+              </p>
+            )}
+          </div>
+        )}
       </Card>
     </div>
   );

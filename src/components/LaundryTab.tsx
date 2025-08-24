@@ -1,7 +1,7 @@
 // components/LaundryTab.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useOrderStore } from "@/store/orderStore";
 
 interface Service {
@@ -69,7 +69,7 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
     fetchData();
   }, [categoryId]);
 
-  const handleQuantityChange = (
+  const handleQuantityChange = useCallback((
     subCatId: number,
     service: Service,
     change: number
@@ -89,24 +89,34 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
         },
       };
 
-      if (newQty > 0) {
-        addOrderLine({
-          id: service.id,
-          name: service.name,
-          price: parseFloat(service.price),
-          quantity: newQty,
-          categoryTitle: categories[0]?.name || "",
-        });
-      } else {
-        addOrderLine({ id: service.id, quantity: 0 }); // حذف اگر مقدار صفر شد
-      }
+      // استفاده از setTimeout برای جدا کردن state update از render cycle
+      setTimeout(() => {
+        if (newQty > 0) {
+          addOrderLine({
+            id: service.id.toString(), // تبدیل به string اگر نیاز باشد
+            name: service.name,
+            price: parseFloat(service.price),
+            quantity: newQty,
+            categoryTitle: categories[0]?.name || "",
+          });
+        } else {
+          addOrderLine({
+            id: service.id.toString(),
+            name: service.name,
+            price: parseFloat(service.price),
+            quantity: 0,
+            categoryTitle: categories[0]?.name || "",
+          });
+        }
+      }, 0);
 
+      // Call onSelectionChange outside of setTimeout to maintain synchronous behavior
       onSelectionChange(updated);
       return updated;
     });
-  };
+  }, [addOrderLine, categories, onSelectionChange]);
 
-  const toggleSubCategory = (subCatId: number) => {
+  const toggleSubCategory = useCallback((subCatId: number) => {
     setOpenSubCategories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(subCatId)) {
@@ -116,7 +126,7 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
       }
       return newSet;
     });
-  };
+  }, []);
 
   return (
     <div>
@@ -145,7 +155,7 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
                         <div>
                           <p>{srv.name}</p>
                           <p className="text-sm text-gray-500">
-                            ${srv.price}
+                            £{srv.price}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -166,7 +176,9 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
                               >
                                 -
                               </button>
-                              <span className="font-medium bg-light border border-Secondary text-Secondary p-1 rounded-xl">{quantity} Item</span>
+                              <span className="font-medium bg-light border border-Secondary text-Secondary p-1 rounded-xl">
+                                {quantity} Item
+                              </span>
                               <button
                                 onClick={() =>
                                   handleQuantityChange(sub.id, srv, 1)

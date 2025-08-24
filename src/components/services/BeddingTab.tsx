@@ -55,8 +55,8 @@ export default function BeddingTab() {
                       key={cat}
                       onClick={() => handleVariantChange(category.id, cat)}
                       className={`px-3 py-1 rounded-full text-sm ${selectedVariant === cat
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-700"
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-200 text-gray-700"
                         }`}
                     >
                       {cat}

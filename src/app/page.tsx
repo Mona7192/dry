@@ -7,6 +7,7 @@ import FeaturesSection from '@/components/Features/FeaturesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import WelcomeOfferSection from '@/components/WelcomeOfferSection';
 
+
 export default function HomePage() {
   return (
     <>

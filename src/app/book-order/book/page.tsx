@@ -3,15 +3,14 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import { isTokenExpired } from '@/utils/jwt';
-
 import { useOrderStore } from "@/store/orderStore";
 import { useCustomOrderStore } from "@/store/customOrderStore";
 import { usePickupDeliveryStore } from "@/store/pickupDeliveryStore";
 import OrderSteps from "@/components/order/OrderSteps";
+import OrderSuccessModal from "@/components/modals/OrderSuccessModal";
+import AuthModal from "@/components/auth/AuthModal";
 
 import { useUserStore } from "@/store/userStore";
-
 
 export default function BookOrderPage() {
   const router = useRouter();
@@ -27,42 +26,47 @@ export default function BookOrderPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState(false);
+  const [orderData, setOrderData] = useState<any>({});
 
-
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const { user, isAuthenticated } = useUserStore();
+  const { user, isAuthenticated, requireAuth } = useUserStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login'); // یا نمایش AuthModal
-    }
-  }, [isAuthenticated, router]);
+    // Check authentication on component mount
+    requireAuth();
+  }, [requireAuth]);
 
   const handleConfirm = async () => {
     setError(null);
 
-
-    if (!isAuthenticated || !user) {
-      setError("Please login to continue");
-      router.push('/login');
-      return;
+    // Use the new requireAuth method
+    if (!requireAuth()) {
+      return; // Modal will be shown automatically
     }
+
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-    if (!token || isTokenExpired(token)) {
-      localStorage.removeItem('token');
+    if (!token) {
       setError("Authentication token not found. Please login again.");
-      router.push('/login');
+      requireAuth();
       return;
     }
 
     const payload = {
       services,
       customOrders,
-      pickupDelivery: { /* ... بقیه فیلدها ... */ },
+      pickupDelivery: {
+        name: pickupStore.name,
+        familyName: pickupStore.familyName,
+        phone: pickupStore.phone,
+        postalCode: pickupStore.postalCode,
+        fullAddress: pickupStore.fullAddress,
+        pickupDate: pickupStore.pickupDate,
+        pickupTime: pickupStore.pickupTime,
+        deliveryDate: pickupStore.deliveryDate,
+        deliveryTime: pickupStore.deliveryTime,
+      },
       total,
-      userId: user.id, // اضافه کردن userId
+      userId: user?.id,
     };
 
     try {
@@ -71,9 +75,8 @@ export default function BookOrderPage() {
       console.log("👤 user:", user);
       console.log("📦 payload:", JSON.stringify(payload, null, 2));
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       const endpoint = `${apiUrl}/orders-user`;
-      // const endpoint = "/api/orders-user";
 
       console.log("🌐 Sending to:", endpoint);
 
@@ -88,12 +91,11 @@ export default function BookOrderPage() {
       });
 
       console.log("📡 Response status:", res.status);
-      console.log("📡 Response headers:", res.headers);
 
-      if (res.status === 302) {
-        console.log("🔄 Redirect detected");
+      if (res.status === 401 || res.status === 302) {
+        console.log("🔄 Authentication required");
         setError("Authentication required. Please login again.");
-        router.push('/login');
+        requireAuth();
         return;
       }
 
@@ -109,30 +111,49 @@ export default function BookOrderPage() {
         setError(msg);
         return;
       }
-      if (res.status == 201) {
 
-        setSuccessMessage(data?.message || "سفارش شما با موفقیت ثبت شد.");
+      if (res.status === 201) {
+        // Set order data for the modal
+        setOrderData({
+          orderNumber: data?.orderNumber || `ORD-${Date.now()}`,
+          total: total,
+          estimatedDelivery: "3-5 business days",
+          customerEmail: user?.email || "customer@example.com",
+          customerPhone: pickupStore.phone || user?.phone || "+44 XXX XXX XXX"
+        });
         setSuccessModal(true);
       } else {
         setError(data?.message || "Order submission failed on server side.");
       }
 
-
     } catch (err: any) {
       console.error("🚨 Network Error:", err);
-      setError(err?.message || "خطای شبکه");
+      setError(err?.message || "Network error occurred");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCloseSuccessModal = () => {
+    setSuccessModal(false);
+    // Reset stores
+    useOrderStore.getState().resetOrders();
+    useCustomOrderStore.getState().resetOrders();
+    // Don't navigate here, let the modal handle it
+  };
+
+  // Show loading while checking authentication
   if (!isAuthenticated) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-center">
-          <p>Redirecting to login...</p>
+      <>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Checking authentication...</p>
+          </div>
         </div>
-      </div>
+        <AuthModal />
+      </>
     );
   }
 
@@ -284,38 +305,26 @@ export default function BookOrderPage() {
         </div>
       </div>
 
-      {error && <div className="mb-4 text-red-600">{error}</div>}
+      {error && <div className="mb-4 text-red-600 bg-red-50 p-3 rounded border border-red-200">{error}</div>}
 
       <div className="flex flex-col md:flex-row gap-3">
         <button
           onClick={() => router.back()}
-          className="w-full md:w-auto py-2 px-6 rounded border"
+          className="w-full md:w-auto py-2 px-6 rounded border hover:bg-gray-50"
         >
           ← Back
         </button>
       </div>
 
-      {successModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
-            <h2 className="text-xl font-bold text-green-600 mb-3">Order Submitted 🎉</h2>
-            <p className="text-gray-700 mb-4">
-              {successMessage || "سفارش شما با موفقیت به ادمین ارسال شد."}
-            </p>
-            <button
-              onClick={() => {
-                setSuccessModal(false);
-                useOrderStore.getState().resetOrders();
-                useCustomOrderStore.getState().resetOrders();
-                router.push("/");
-              }}
-              className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Global Auth Modal */}
+      <AuthModal />
+
+      {/* Enhanced Success Modal */}
+      <OrderSuccessModal
+        isOpen={successModal}
+        onClose={handleCloseSuccessModal}
+        orderData={orderData}
+      />
     </div>
   );
 }
