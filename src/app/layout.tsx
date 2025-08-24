@@ -1,14 +1,23 @@
-// src/app/layout.tsx
+import type { Metadata } from "next";
 import "./globals.css";
-import SessionWrapper from "@/components/SessionWrapper";
+import ClientLayout from "@/components/ClientLayout";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: "Laundry Service",
+  description: "Professional laundry and dry cleaning service",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900">
-        <SessionWrapper>
+      <body>
+        <ClientLayout>
           {children}
-        </SessionWrapper>
+        </ClientLayout>
       </body>
     </html>
   );

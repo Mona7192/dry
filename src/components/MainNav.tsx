@@ -4,21 +4,24 @@ import Link from "next/link";
 import { FaSearch, FaUserCircle } from "react-icons/fa";
 import React, { useState, useEffect } from "react";
 import AuthModal from "./auth/AuthModal";
-import { useSession, signOut } from "next-auth/react";
+import { useUserStore } from "@/store/userStore"; // NextAuth جایگزین شده با Zustand
 import { Menu, X } from "lucide-react"; // آیکون‌های همبرگری و بستن
 
-
 export default function MainNav() {
-  const { data: session } = useSession();
+  const { user, isAuthenticated, logout } = useUserStore(); // استفاده از Zustand store
   const [openAuth, setOpenAuth] = useState(false);
   const [openMenu, setOpenMenu] = useState(false);
-const [isOpen, setIsOpen] = useState(false);
-  
-  
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    setOpenMenu(false);
+  };
+
   return (
     <div className="w-full bg-white py-3 px-4 shadow-sm flex items-center justify-between">
       {/* Navigation Links */}
-     <div className="container mx-auto flex justify-between items-center py-4 px-6">
+      <div className="container mx-auto flex justify-between items-center py-4 px-6">
 
         {/* Hamburger button (mobile only) */}
         <button
@@ -41,16 +44,14 @@ const [isOpen, setIsOpen] = useState(false);
 
       {/* Overlay + Mobile Slide Menu */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${
-          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
+        className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+          }`}
         onClick={() => setIsOpen(false)}
       />
 
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Close button */}
         <div className="flex justify-between items-center p-4 border-b">
@@ -82,7 +83,7 @@ const [isOpen, setIsOpen] = useState(false);
           <FaSearch className="text-Secondary ml-2" />
         </div>
 
-        {!session ? (
+        {!isAuthenticated ? (
           <button
             onClick={() => setOpenAuth(true)}
             className="bg-primary text-white px-4 py-2 rounded"
@@ -103,10 +104,13 @@ const [isOpen, setIsOpen] = useState(false);
             {openMenu && (
               <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden">
                 <div className="px-4 py-2 text-sm text-gray-600 border-b">
-                  {session.user?.email}
+                  {user?.email}
+                </div>
+                <div className="px-4 py-2 text-sm text-gray-600 border-b">
+                  Welcome, {user?.name}
                 </div>
                 <button
-                  onClick={() => signOut()}
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
                 >
                   Logout
@@ -116,8 +120,13 @@ const [isOpen, setIsOpen] = useState(false);
           </div>
         )}
 
-        {openAuth && <AuthModal onClose={() => setOpenAuth(false)} />}
-       
+        {openAuth && (
+          <AuthModal
+            isOpen={openAuth}
+            onClose={() => setOpenAuth(false)}
+          />
+        )}
+
       </div>
     </div>
   );

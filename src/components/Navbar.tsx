@@ -1,8 +1,7 @@
-"use client"
-// components/Navbar.tsx
+"use client";
+
 import TopBar from "./TopBar";
 import MainNav from "./MainNav";
-
 
 export default function Navbar() {
   return (
