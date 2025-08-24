@@ -14,11 +14,11 @@ interface ServiceCategoryProps {
 
 const ServiceCategory: React.FC<ServiceCategoryProps> = ({
   title,
-    categories = [],
+  categories = [],
   options = [],
   items = [],
 }) => {
-    const [selectedCategory, setSelectedCategory] = useState(
+  const [selectedCategory, setSelectedCategory] = useState(
     categories.length > 0 ? categories[0] : ""
   );
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);

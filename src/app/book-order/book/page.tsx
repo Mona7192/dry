@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+
+import { isTokenExpired } from '@/utils/jwt';
 
 import { useOrderStore } from "@/store/orderStore";
 import { useCustomOrderStore } from "@/store/customOrderStore";
 import { usePickupDeliveryStore } from "@/store/pickupDeliveryStore";
 import OrderSteps from "@/components/order/OrderSteps";
 
+import { useUserStore } from "@/store/userStore";
+
 
 export default function BookOrderPage() {
   const router = useRouter();
-  const { data: session } = useSession();
 
   const lines = useOrderStore((s) => s.lines);
   const totalFn = useOrderStore((s) => s.total);
@@ -25,38 +27,85 @@ export default function BookOrderPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successModal, setSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string>("");
-  const token = localStorage.getItem('token');
+
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const { user, isAuthenticated } = useUserStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login'); // یا نمایش AuthModal
+    }
+  }, [isAuthenticated, router]);
 
   const handleConfirm = async () => {
     setError(null);
+
+
+    if (!isAuthenticated || !user) {
+      setError("Please login to continue");
+      router.push('/login');
+      return;
+    }
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+    if (!token || isTokenExpired(token)) {
+      localStorage.removeItem('token');
+      setError("Authentication token not found. Please login again.");
+      router.push('/login');
+      return;
+    }
 
     const payload = {
       services,
       customOrders,
       pickupDelivery: { /* ... بقیه فیلدها ... */ },
       total,
+      userId: user.id, // اضافه کردن userId
     };
 
     try {
       setLoading(true);
       console.log("🔑 token:", token);
-      console.log("🔑 payload:", JSON.stringify(payload));
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders-user`, {
+      console.log("👤 user:", user);
+      console.log("📦 payload:", JSON.stringify(payload, null, 2));
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+      const endpoint = `${apiUrl}/orders-user`;
+      // const endpoint = "/api/orders-user";
+
+      console.log("🌐 Sending to:", endpoint);
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => null);
-      console.log("Response:", res);
-      console.log("Data:", data);
+      console.log("📡 Response status:", res.status);
+      console.log("📡 Response headers:", res.headers);
+
+      if (res.status === 302) {
+        console.log("🔄 Redirect detected");
+        setError("Authentication required. Please login again.");
+        router.push('/login');
+        return;
+      }
+
+      const data = await res.json().catch((parseError) => {
+        console.error("JSON Parse Error:", parseError);
+        return null;
+      });
+
+      console.log("📊 Response data:", data);
 
       if (!res.ok) {
-        const msg = data?.message || `Server returned ${res.status}`;
+        const msg = data?.message || `Server returned ${res.status}: ${res.statusText}`;
         setError(msg);
         return;
       }
@@ -65,14 +114,27 @@ export default function BookOrderPage() {
         setSuccessMessage(data?.message || "سفارش شما با موفقیت ثبت شد.");
         setSuccessModal(true);
       } else {
-        setError("Order submission failed on server side.");
+        setError(data?.message || "Order submission failed on server side.");
       }
+
+
     } catch (err: any) {
+      console.error("🚨 Network Error:", err);
       setError(err?.message || "خطای شبکه");
     } finally {
       setLoading(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <p>Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 md:px-6 py-10 bg-light">

@@ -7,7 +7,7 @@ import { MinusIcon, PlusIcon } from "@heroicons/react/24/solid"
 
 export default function BeddingTab() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>( {})
+  const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({})
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({})
 
   const { lines, addItem, removeItem } = useOrderStore()
@@ -54,11 +54,10 @@ export default function BeddingTab() {
                     <button
                       key={cat}
                       onClick={() => handleVariantChange(category.id, cat)}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        selectedVariant === cat
+                      className={`px-3 py-1 rounded-full text-sm ${selectedVariant === cat
                           ? "bg-green-500 text-white"
                           : "bg-gray-200 text-gray-700"
-                      }`}
+                        }`}
                     >
                       {cat}
                     </button>

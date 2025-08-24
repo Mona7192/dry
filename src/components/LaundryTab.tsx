@@ -6,7 +6,7 @@ import { useOrderStore } from "@/store/orderStore";
 
 interface Service {
   id: number;
-  name: string;
+  namee: string;
   price: string;
 }
 
@@ -92,7 +92,7 @@ const LaundryTab: React.FC<LaundryTabProps> = ({
       if (newQty > 0) {
         addOrderLine({
           id: service.id,
-          name: service.name,
+          namee: service.name,
           price: parseFloat(service.price),
           quantity: newQty,
           categoryTitle: categories[0]?.name || "",

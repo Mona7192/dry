@@ -1,11 +1,14 @@
 import { useOrderStore } from "@/store/orderStore";
 import { useCustomOrderStore } from "@/store/customOrderStore";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useUserStore } from "@/store/userStore"; // NextAuth جایگزین شده
+import { useState } from "react";
+import AuthModal from "@/components/auth/AuthModal";
 
 export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" }: { nextHref?: string }) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { user, isAuthenticated } = useUserStore(); // استفاده از Zustand store
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const lines = useOrderStore((state) => state.lines);
   const customOrders = useCustomOrderStore((state) => state.customOrders);
@@ -14,10 +17,11 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
   const items = Object.values(lines);
 
   const handleContinue = () => {
-    if (!session) {
-      router.push(`/login?redirect=${encodeURIComponent(nextHref)}`); // ✅ بفرست لاگین با redirect
+    if (!isAuthenticated) {
+      // نمایش Auth Modal به جای redirect
+      setShowAuthModal(true);
     } else {
-      router.push(nextHref); // ✅ اگر لاگین بود مستقیماً برو
+      router.push(nextHref); // اگر لاگین بود مستقیماً برو
     }
   };
 
@@ -28,6 +32,11 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
     acc[mainCategory].push(item);
     return acc;
   }, {});
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    router.push(nextHref);
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 max-w-md mx-auto sm:max-w-lg lg:max-w-xl border border-Gray-2">
@@ -112,12 +121,21 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
         disabled={items.length === 0 && customOrders.length === 0}
         onClick={handleContinue}
         className={`w-full py-2 rounded-md text-white transition my-5 ${items.length === 0
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-primary hover:bg-Secondary hover:border"
+          ? "bg-gray-400 cursor-not-allowed"
+          : "bg-primary hover:bg-Secondary hover:border"
           }`}
       >
-        Continue to delivery details
+        {!isAuthenticated ? "Login to Continue" : "Continue to delivery details"}
       </button>
+
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          initialTab="login"
+        />
+      )}
     </div>
   );
 }

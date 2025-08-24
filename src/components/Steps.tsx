@@ -1,79 +1,52 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+import { useUserStore } from "@/store/userStore";
+import AuthModal from "./auth/AuthModal";
 
-export default function Navbar() {
-  const { data: session, status } = useSession();
+export default function Steps() {
+  const { user, isAuthenticated, logout } = useUserStore();
+  const [openAuth, setOpenAuth] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <div className="flex justify-between items-center px-6 py-3 bg-gray-100 shadow">
-     
-      {status === "loading" ? (
-        <p>Loading...</p>
-      ) : session ? (
-        <div className="flex items-center gap-4">
-          <span className="text-gray-700">{session.user?.email}</span>
+      <div className="flex items-center">
+        <h1 className="text-xl font-semibold text-gray-800">Your Order Steps</h1>
+      </div>
+
+      <div className="flex items-center">
+        {isAuthenticated ? (
+          <div className="flex items-center gap-4">
+            <span className="text-gray-700">👤 {user?.name || user?.email}</span>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
           <button
-            onClick={() => signOut()}
-            className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+            onClick={() => setOpenAuth(true)}
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
           >
-            Logout
+            Login / Register
           </button>
-        </div>
-      ) : (
-        <button
-          className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-          onClick={() => {
-             openAuth && (
+        )}
+      </div>
+
+      {/* Auth Modal */}
+      {openAuth && (
         <AuthModal
+          isOpen={openAuth}
           onClose={() => setOpenAuth(false)}
-          onLogin={(userData, token) => {
-            localStorage.setItem("user", JSON.stringify(userData));
-            localStorage.setItem("token", token);
-            setUser(userData);
-            setOpenAuth(false);
-          }}
+          initialTab="login"
         />
-      )
-            // مودال لاگینت رو اینجا باز کن
-            const modal = document.getElementById("auth-modal");
-            if (modal) modal.classList.remove("hidden");
-          }}
-        >
-          Login / Register
-        </button>
       )}
     </div>
   );
 }
-
-{!user ? (
-        <button
-          onClick={() => setOpenAuth(true)}
-          className="bg-primary text-white px-4 py-2 rounded"
-        >
-          Login / Sign Up
-        </button>
-      ) : (
-        <div className="flex gap-4 items-center">
-          <span>👤 {user.email}</span>
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-3 py-1 rounded"
-          >
-            Logout
-          </button>
-        </div>
-      )}
-
-      {openAuth && (
-        <AuthModal
-          onClose={() => setOpenAuth(false)}
-          onLogin={(userData, token) => {
-            localStorage.setItem("user", JSON.stringify(userData));
-            localStorage.setItem("token", token);
-            setUser(userData);
-            setOpenAuth(false);
-          }}
-        />
-      )}
