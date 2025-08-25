@@ -52,11 +52,10 @@ export default function OtherServicesTab() {
                   <button
                     key={variant}
                     onClick={() => handleVariantChange(category.id, variant)}
-                    className={`px-3 py-1 border rounded-full text-sm ${
-                      selectedVariants[category.id] === variant
+                    className={`px-3 py-1 border rounded-full text-sm ${selectedVariants[category.id] === variant
                         ? "bg-green-500 text-white"
                         : "bg-gray-100 text-gray-700"
-                    }`}
+                      }`}
                   >
                     {variant}
                   </button>
@@ -107,7 +106,6 @@ export default function OtherServicesTab() {
                                 price: item.price,
                                 serviceVariant: selectedVariants[category.id],
                                 options: selectedOptions[category.id],
-                                categoryTitle: category.title,
                               })
                             }
                             className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded"
@@ -124,7 +122,6 @@ export default function OtherServicesTab() {
                               price: item.price,
                               serviceVariant: selectedVariants[category.id],
                               options: selectedOptions[category.id],
-                              categoryTitle: category.title,
                             })
                           }
                           className="text-sm px-3 py-1 bg-green-500 text-white rounded"

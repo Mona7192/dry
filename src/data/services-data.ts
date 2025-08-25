@@ -7,6 +7,7 @@ export type ServiceItem = {
 }
 
 export type LaundryCategory = {
+  note: any
   id: string
   title: string
   categories: string[]    // مثل Clean & Iron, Iron Only, Child

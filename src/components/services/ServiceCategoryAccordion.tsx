@@ -34,7 +34,6 @@ export default function ServiceCategoryAccordion({ category }: Props) {
       id: item.id,
       name: item.name,
       price: item.price,
-      categoryTitle: category.title,
       serviceVariant: selectedCategory,
       options: selectedOptions,
     })
@@ -60,11 +59,10 @@ export default function ServiceCategoryAccordion({ category }: Props) {
                 <button
                   key={c}
                   onClick={() => setSelectedCategory(c)}
-                  className={`px-3 py-1 text-sm rounded-full border transition ${
-                    selectedCategory === c
-                      ? "bg-green-600 text-white border-green-600"
-                      : "bg-white hover:bg-green-50"
-                  }`}
+                  className={`px-3 py-1 text-sm rounded-full border transition ${selectedCategory === c
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white hover:bg-green-50"
+                    }`}
                 >
                   {c}
                 </button>
@@ -95,9 +93,8 @@ export default function ServiceCategoryAccordion({ category }: Props) {
               return (
                 <div
                   key={item.id}
-                  className={`flex items-center justify-between border rounded-lg p-3 ${
-                    q ? "border-green-500 bg-green-50" : ""
-                  }`}
+                  className={`flex items-center justify-between border rounded-lg p-3 ${q ? "border-green-500 bg-green-50" : ""
+                    }`}
                 >
                   <div className="flex flex-col">
                     <span className="font-medium">{item.name}</span>

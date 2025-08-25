@@ -101,7 +101,6 @@ export default function BeddingTab() {
                                 id: item.id,
                                 name: item.name,
                                 price: item.price,
-                                categoryTitle: category.title,
                                 serviceVariant: selectedVariant,
                                 options: selectedOptionList,
                               })
@@ -125,7 +124,6 @@ export default function BeddingTab() {
                                   id: item.id,
                                   name: item.name,
                                   price: item.price,
-                                  categoryTitle: category.title,
                                   serviceVariant: selectedVariant,
                                   options: selectedOptionList,
                                 })

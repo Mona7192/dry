@@ -24,11 +24,10 @@ export default function ServicesTabs() {
         {tabs.map(tab => (
           <button
             key={tab.id}
-            className={`px-4 py-2 rounded-3xl font-semibold ${
-              activeTab === tab.id
+            className={`px-4 py-2 rounded-3xl font-semibold ${activeTab === tab.id
                 ? "bg-Secondary text-white"
                 : "rounded-3xl border border-Gray-2 text-gray-700"
-            }`}
+              }`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -38,7 +37,7 @@ export default function ServicesTabs() {
 
       {/* محتوای تب‌ها */}
       <div>
-        {activeTab === "laundry" && <LaundryTab data={laundryCategories} />}
+        {/* {activeTab === "laundry" && <LaundryTab data={laundryCategories} />} */}
         {activeTab === "bedding" && <BeddingTab />}
         {activeTab === "custom" && <CustomTab />}
         {activeTab === "other" && <OtherServicesTab />}

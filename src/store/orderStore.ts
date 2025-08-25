@@ -10,6 +10,10 @@ interface OrderLine {
 }
 
 interface OrderStore {
+  inc: any;
+  dec: any;
+  removeItem(id: string): void;
+  addItem(arg0: { serviceVariant: string; options: string[]; id: string; name: string; price: number; }): void;
   lines: Record<string, OrderLine>;
   addOrderLine: (item: OrderLine) => void;
   updateQuantity: (id: string, quantity: number) => void;
