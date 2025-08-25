@@ -29,7 +29,7 @@ export default function ServicesSection() {
           </h2>
           <p className="text-gray-600 md:basis-3/4 text-sm md:text-base max-w-4xl">
             We specialize in premium laundry and duvet cleaning services tailored to fit your
-            schedule. Whether it's your everyday clothes or heavy bedding, we ensure everything is
+            schedule. Whether it&apos;s your everyday clothes or heavy bedding, we ensure everything is
             washed, folded, and returned to you fresh and clean with free collection and delivery
             included.
           </p>

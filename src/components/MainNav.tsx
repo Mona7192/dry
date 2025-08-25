@@ -5,7 +5,7 @@ import { FaSearch, FaUserCircle } from "react-icons/fa";
 import React, { useState } from "react";
 import AuthModal from "./auth/AuthModal";
 import { useUserStore } from "@/store/userStore";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 
 export default function MainNav() {
   const {
@@ -26,11 +26,11 @@ export default function MainNav() {
   return (
     <div className="w-full bg-white py-3 px-4 shadow-sm flex items-center justify-between">
       {/* Navigation Links */}
-      <div className="container mx-auto flex justify-between items-center py-4 px-6">
+      <div className="container sm:basis-2/3 basis-1/4 mx-auto flex justify-between items-center py-4 px-6">
 
         {/* Hamburger button (mobile only) */}
         <button
-          className="md:hidden text-gray-700"
+          className="md:hidden text-gray-700 w-4"
           onClick={() => setIsOpen(true)}
         >
           <Menu size={28} />
@@ -49,7 +49,7 @@ export default function MainNav() {
 
       {/* Overlay + Mobile Slide Menu */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        className={`fixed basis-3/4 inset-0 bg-black/50 z-40 transition-opacity ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"
           }`}
         onClick={() => setIsOpen(false)}
       />
@@ -69,7 +69,6 @@ export default function MainNav() {
         {/* Mobile Nav */}
         <nav className="flex flex-col p-4 gap-4 text-gray-700 text-sm font-medium">
           <Link href="/" onClick={() => setIsOpen(false)} className="hover:text-primary">Home</Link>
-          <Link href="/services" onClick={() => setIsOpen(false)} className="hover:text-primary">Services</Link>
           <Link href="/pricing" onClick={() => setIsOpen(false)} className="hover:text-primary">Pricing</Link>
           <Link href="/book-order" onClick={() => setIsOpen(false)} className="hover:text-primary">Book Order</Link>
           <Link href="/about" onClick={() => setIsOpen(false)} className="hover:text-primary">About Us</Link>
@@ -89,12 +88,16 @@ export default function MainNav() {
         </div>
 
         {!isAuthenticated ? (
-          <button
-            onClick={() => openAuthModal('login')} // استفاده از openAuthModal از store
-            className="bg-primary text-white px-4 py-2 rounded"
-          >
-            Login / Sign Up
-          </button>
+         <button
+  onClick={() => openAuthModal("login")} // استفاده از openAuthModal از store
+  className="bg-primary text-white px-4 py-2 rounded flex items-center justify-center"
+>
+  {/* متن فقط در سایز sm به بالا */}
+  <span className="hidden sm:block">Login / Sign Up</span>
+
+  {/* آیکون فقط در موبایل */}
+  <LogIn className="block sm:hidden h-5 w-5" />
+</button>
         ) : (
           <div className="relative">
             {/* Avatar */}

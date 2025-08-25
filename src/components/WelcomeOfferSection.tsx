@@ -16,17 +16,17 @@ export default function WelcomeOfferSection() {
 
   return (
     <section className="py-20 bg-light">
-      <div className="container mx-auto px-8 grid grid-cols-1 md:grid-cols-3 items-center gap-10">
+      <div className="container mx-auto px-8 grid grid-cols-1 md:grid-cols-3 items-center sm:gap-10">
         
         {/* Text Content */}
-        <div className="col-span-2 flex flex-col gap-6 px-12">
-          <h2 className="text-5xl max-w-[400] font-bold"><mark className="bg-light text-primary">Welcome Offer</mark> Just for You!</h2>
+        <div className="col-span-2 flex flex-col gap-6 sm:px-12">
+          <h2 className="text-5xl max-w-[400] font-bold"><mark className="bg-transparent text-primary">Welcome Offer</mark> Just for You!</h2>
           <p className="text-gray-600 max-w-[700]">
             Get 15% off your first order. Use the promo code below at checkout and enjoy fresh, clean clothes with a special discount.
           </p>
 
           {/* Discount Box */}
-          <div className="flex items-center justify-between gap-4 bg-white border border-Secondary rounded-lg px-4 py-3 w-full max-w-[700]">
+          <div className="flex items-center justify-between gap-4 bg-white border border-Secondary rounded-lg px-4 py-3 w-full max-w-[700] mb-2.5">
             <span className="font-mono text-lg tracking-wider">{discountCode}</span>
             <button
               onClick={handleCopy}

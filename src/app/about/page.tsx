@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/Ui/card";
 import { Button } from "@/components/Ui/button";
 import { Badge } from "@/components/Ui/badge";
+import Image from "next/image";
 
 // Animation
 const container = {
@@ -53,21 +54,36 @@ export default function AboutPage() {
                 <div className="flex items-center gap-2"><Leaf className="h-4 w-4"/> Eco detergents</div>
               </div>
             </motion.div>
-
-            <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}>
-              <Card className="rounded-2xl shadow-lg">
-                <CardContent className="p-0">
-                  <div className="grid grid-cols-3 gap-2 p-4 sm:gap-3">
-                    <div className="h-28 rounded-xl bg-blue-100 sm:h-36"/>
-                    <div className="h-28 rounded-xl bg-blue-200 sm:h-36"/>
-                    <div className="h-28 rounded-xl bg-blue-300 sm:h-36"/>
-                    <div className="h-28 rounded-xl bg-blue-300 sm:h-36"/>
-                    <div className="h-28 rounded-xl bg-blue-100 sm:h-36"/>
-                    <div className="h-28 rounded-xl bg-blue-200 sm:h-36"/>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
+  <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <Card className="rounded-2xl shadow-lg">
+        <CardContent className="p-0">
+          <div className="grid grid-cols-3 gap-2 p-4 sm:gap-3">
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/hero1.png" alt="Image 1" fill className="object-cover" />
+            </div>
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/hero2.png" alt="Image 2" fill className="object-cover" />
+            </div>
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/hero3.jpg" alt="Image 3" fill className="object-cover" />
+            </div>
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/hero4.png" alt="Image 4" fill className="object-cover" />
+            </div>
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/hero5.png" alt="Image 5" fill className="object-cover" />
+            </div>
+            <div className="h-28 sm:h-36 rounded-xl overflow-hidden relative">
+              <Image src="/images/pricing.png" alt="Image 6" fill className="object-cover" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
           </div>
         </Section>
       </div>
@@ -152,7 +168,7 @@ export default function AboutPage() {
 
       {/* CTA */}
       <Section className="py-10">
-        <Card className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <Card className="rounded-2xl bg-gradient-to-r from-primary to-Secondary text-white">
           <CardContent className="flex flex-col items-start justify-between gap-4 p-8 md:flex-row md:items-center">
             <div>
               <h3 className="text-2xl font-semibold">Ready for crease-free days?</h3>

@@ -26,9 +26,9 @@ export default function TestimonialsSection() {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex flex-row mb-12 mx-auto">
-          <h2 className="basis-1/4 text-3xl font-bold mb-4 px-10">What <mark className="text-Secondary bg-white">Our Customers</mark> Say</h2>
-          <p className="text-gray-600 basis-3/4 max-w-2lg">
+        <div className="flex flex-row flex-wrap mb-12 mx-auto">
+          <h2 className="sm:basis-1/4 text-3xl font-bold mb-4 px-10">What <mark className="text-Secondary bg-white">Our Customers</mark> Say</h2>
+          <p className="text-gray-600 sm:basis-3/4 max-w-2lg">
             Don’t just take our word for it — hear from happy customers who trust us with their laundry and bedding needs. From spotless duvets to perfectly folded shirts, we’re proud to deliver service that speaks for itself.
           </p>
         </div>
@@ -36,7 +36,7 @@ export default function TestimonialsSection() {
         <div ref={sliderRef} className="keen-slider">
           {testimonials.map((testimonial, index) => (
             <div key={index} className="keen-slider__slide bg-white outline-2 outline-Secondary p-6 rounded-xl my-5">
-              <p className="text-[#2B2B2B] mb-4 font-normal">"{testimonial.text}"</p>
+              <p className="text-[#2B2B2B] mb-4 font-normal">{testimonial.text}</p>
               <div className="flex items-center gap-4">
                 <Image
                   src={testimonial.avatar}

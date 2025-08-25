@@ -17,7 +17,7 @@ export default function BookOrderPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 pb-2.5">
         <div className="lg:col-span-2 rounded-2xl border border-Gray-2 p-4 bg-white">
           <h2 className="font-bold text-[#2b2b2b] text-xl pb-2.5">What Would You Like Us to Clean?</h2>
-          <p className="font-normal text-Gray-1 text-[16px] pb-6">Start by choosing the type of cleaning you need. After selecting a service category, you'll be able to pick specific items you'd like cleaned.</p>
+          <p className="font-normal text-Gray-1 text-[16px] pb-6">Start by choosing the type of cleaning you need. After selecting a service category, you&apos;ll be able to pick specific items you&apos;d like cleaned.</p>
           <OrderTabs />
         </div>
       <div>
