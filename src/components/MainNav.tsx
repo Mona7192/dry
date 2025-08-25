@@ -126,7 +126,9 @@ export default function MainNav() {
         )}
 
         {/* AuthModal - حذف props و استفاده از store */}
-        <AuthModal />
+        <AuthModal isOpen={false} onClose={function (): void {
+          throw new Error("Function not implemented.");
+        }} initialTab={""} />
 
       </div>
     </div>

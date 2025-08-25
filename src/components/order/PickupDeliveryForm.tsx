@@ -256,7 +256,9 @@ export default function PickupDeliveryForm() {
       </form>
 
       {/* AuthModal از store مدیریت می‌شود */}
-      <AuthModal />
+      <AuthModal isOpen={false} onClose={function (): void {
+        throw new Error("Function not implemented.")
+      }} initialTab={""} />
     </>
   );
 }

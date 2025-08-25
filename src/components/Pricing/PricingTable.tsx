@@ -21,7 +21,7 @@ export default function PricingCard({ service, onOrderClick }: Props) {
                 className="text-xs px-2 py-1 font-bold text-primary rounded hover:bg-gray-800"
                 onClick={() => onOrderClick({ ...item, service: service.label })}
               >
-                ->
+                -{">"}
               </button>
             </div>
           </li>

@@ -6,12 +6,12 @@ import PickupDeliveryTime from "@/components/pickup/PickupDeliveryTime";
 import DriverNote from "@/components/pickup/DriverNote";
 import PickupOrderSummary from "@/components/pickup/PickupOrderSummary";
 import OrderSteps from "@/components/order/OrderSteps";
-import ProtectedPageWrapper from "@/components/ProtectedPageWrapper";
+// import ProtectedPageWrapper from "@/components/ProtectedPageWrapper";
 
 export default async function PickupDeliveryPage() {
 
   return (
-    
+
     <div className="bg-light px-12 pb-5">
       <OrderSteps />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-12">
@@ -28,6 +28,6 @@ export default async function PickupDeliveryPage() {
         </div>
       </div>
     </div>
-    
+
   )
 }

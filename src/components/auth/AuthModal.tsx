@@ -6,7 +6,12 @@ import { Label } from "@/components/Ui/label";
 import { Card } from "@/components/Ui/card";
 import { Mail, Lock, User, Shield, ArrowLeft } from "lucide-react";
 
-export default function AuthModal() {
+// export default function AuthModal() {
+export default function AuthModal({ isOpen, onClose, initialTab }: {
+  isOpen: boolean;
+  onClose: () => void;
+  initialTab: string;
+}) {
   const {
     showAuthModal,
     authModalTab,
@@ -166,8 +171,8 @@ export default function AuthModal() {
             <button
               onClick={() => switchTab("login")}
               className={`flex-1 py-2 px-4 font-medium ${authModalTab === "login"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               Sign In
@@ -175,8 +180,8 @@ export default function AuthModal() {
             <button
               onClick={() => switchTab("register")}
               className={`flex-1 py-2 px-4 font-medium ${authModalTab === "register"
-                  ? "border-b-2 border-blue-500 text-blue-600"
-                  : "text-gray-500 hover:text-gray-700"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500 hover:text-gray-700"
                 }`}
             >
               Register

@@ -138,7 +138,7 @@ export default function BookOrderPage() {
     setSuccessModal(false);
     // Reset stores
     useOrderStore.getState().resetOrders();
-    useCustomOrderStore.getState().resetOrders();
+    // useCustomOrderStore.getState().resetOrders();
     // Don't navigate here, let the modal handle it
   };
 
@@ -152,7 +152,9 @@ export default function BookOrderPage() {
             <p>Checking authentication...</p>
           </div>
         </div>
-        <AuthModal />
+        <AuthModal isOpen={false} onClose={function (): void {
+          throw new Error("Function not implemented.");
+        }} initialTab={""} />
       </>
     );
   }
@@ -317,7 +319,9 @@ export default function BookOrderPage() {
       </div>
 
       {/* Global Auth Modal */}
-      <AuthModal />
+      <AuthModal isOpen={false} onClose={function (): void {
+        throw new Error("Function not implemented.");
+      }} initialTab={""} />
 
       {/* Enhanced Success Modal */}
       <OrderSuccessModal

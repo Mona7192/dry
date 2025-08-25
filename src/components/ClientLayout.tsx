@@ -41,7 +41,9 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <>
       <Header />         {/* هدر سایت */}
-      <AuthModal />      {/* مودال */}
+      <AuthModal isOpen={false} onClose={function (): void {
+        throw new Error("Function not implemented.");
+      }} initialTab={""} />      {/* مودال */}
       <main>{children}</main>
       <Footer />       {/* فوتر سایت */}
     </>

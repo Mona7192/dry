@@ -182,10 +182,10 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
             disabled={!hasItems || isLoading}
             onClick={handleContinue}
             className={`w-full mt-6 py-4 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center gap-2 ${!hasItems
+              ? "bg-[#B1B1B1] cursor-not-allowed"
+              : isLoading
                 ? "bg-[#B1B1B1] cursor-not-allowed"
-                : isLoading
-                  ? "bg-[#B1B1B1] cursor-not-allowed"
-                  : "bg-gradient-to-r from-[#4BA3C3] to-[#75C085] hover:from-[#4BA3C3]/90 hover:to-[#75C085]/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                : "bg-gradient-to-r from-[#4BA3C3] to-[#75C085] hover:from-[#4BA3C3]/90 hover:to-[#75C085]/90 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
               }`}
           >
             {isLoading ? (
@@ -215,7 +215,9 @@ export default function OrderSummary({ nextHref = "/book-order/pickup-delivery" 
         </div>
       </div>
 
-      <AuthModal />
+      <AuthModal isOpen={false} onClose={function (): void {
+        throw new Error("Function not implemented.");
+      }} initialTab={""} />
     </>
   );
 }
