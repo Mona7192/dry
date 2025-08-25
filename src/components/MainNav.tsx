@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { FaSearch, FaUserCircle } from "react-icons/fa";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import AuthModal from "./auth/AuthModal";
-import { useUserStore } from "@/store/userStore"; // NextAuth جایگزین شده با Zustand
-import { Menu, X } from "lucide-react"; // آیکون‌های همبرگری و بستن
+import { useUserStore } from "@/store/userStore";
+import { Menu, X } from "lucide-react";
 
 export default function MainNav() {
-  const { user, isAuthenticated, logout } = useUserStore(); // استفاده از Zustand store
-  const [openAuth, setOpenAuth] = useState(false);
+  const {
+    user,
+    isAuthenticated,
+    logout,
+    openAuthModal // استفاده از تابع openAuthModal از store
+  } = useUserStore();
+
   const [openMenu, setOpenMenu] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -85,7 +90,7 @@ export default function MainNav() {
 
         {!isAuthenticated ? (
           <button
-            onClick={() => setOpenAuth(true)}
+            onClick={() => openAuthModal('login')} // استفاده از openAuthModal از store
             className="bg-primary text-white px-4 py-2 rounded"
           >
             Login / Sign Up
@@ -120,12 +125,8 @@ export default function MainNav() {
           </div>
         )}
 
-        {openAuth && (
-          <AuthModal
-            isOpen={openAuth}
-            onClose={() => setOpenAuth(false)}
-          />
-        )}
+        {/* AuthModal - حذف props و استفاده از store */}
+        <AuthModal />
 
       </div>
     </div>
